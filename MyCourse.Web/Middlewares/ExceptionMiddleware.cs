@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using MyCourse.Domain.Exceptions.ApplicationEx;
 using MyCourse.Domain.Exceptions.CourseExceptions.CourseEx;
 using MyCourse.Web.Models.ErrorModels;
 using System.Net;
@@ -43,6 +44,33 @@ namespace MyCourse.Web.Middlewares
 
                 var json = JsonSerializer.Serialize(response);
 
+                await context.Response.WriteAsync(json);
+            }
+            catch (Domain.Exceptions.ApplicationEx.ApplicationException ex)
+            {
+                // Behandlung von benutzerdefinierten ApplicationException
+                _logger.LogWarning(ex, "An application-related error occurred.");
+
+                context.Response.StatusCode = ex.ErrorCode switch
+                {
+                    ApplicationErrorCode.NotFound => (int)HttpStatusCode.NotFound,
+                    ApplicationErrorCode.Unauthorized => (int)HttpStatusCode.Unauthorized,
+                    _ => (int)HttpStatusCode.BadRequest
+                };
+                context.Response.ContentType = "application/json";
+
+                var response = new ErrorResponse
+                {
+                    Error = ex.Message,
+                    Code = ex.ErrorCode.ToString(),
+                    Details = new
+                    {
+                        applicationId = ex.ApplicationId,
+                        additionalData = ex.AdditionalData
+                    }
+                };
+
+                var json = JsonSerializer.Serialize(response);
                 await context.Response.WriteAsync(json);
             }
             catch (ValidationException ex)

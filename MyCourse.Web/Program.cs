@@ -11,6 +11,7 @@ using MyCourse.Domain.Entities;
 using MyCourse.Domain.Validation.EntityValidations;
 using MyCourse.Domain.Data.Seeders;
 using MyCourse.Domain.Extensions;
+using MyCourse.Domain.MappingProfiles;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -93,13 +94,8 @@ builder.Services.AddInjectables();
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-// Add Repositories
-
-
-// Add Services
-
-// AutoMapper
-builder.Services.AddAutoMapper(typeof(Program));
+// Add AutoMapper (.Domain Assembly)
+builder.Services.AddAutoMapper(typeof(CourseProfile));
 
 // Add Middlewares
 builder.Services.AddTransient<ExceptionMiddleware>();

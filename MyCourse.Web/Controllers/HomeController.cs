@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using MyCourse.Web.Models;
+using MyCourse.Web.Models.ErrorModels;
 
 namespace MyCourse.Web.Controllers
 {

@@ -15,12 +15,12 @@ namespace MyCourse.Domain.Extensions
                 throw new InvalidOperationException("Domain assembly not found.");
 
             var typesWithAttributes = domainAssembly.GetTypes()
-                .Where(t => t.IsClass && !t.IsAbstract && t.GetCustomAttributes<InjectableAttribute>().Any());
+                .Where(t => t.IsClass && !t.IsAbstract && t.GetCustomAttributes<InjectableAttribute>().Any())
+                .ToList();
 
             foreach (var type in typesWithAttributes)
             {
                 var attribute = type.GetCustomAttribute<InjectableAttribute>()!;
-
                 var interfaces = type.GetInterfaces();
 
                 if (type.IsGenericTypeDefinition)
@@ -29,7 +29,8 @@ namespace MyCourse.Domain.Extensions
                     {
                         if (@interface.IsGenericType)
                         {
-                            services.Add(new ServiceDescriptor(@interface.GetGenericTypeDefinition(), type, attribute.Lifetime));
+                            var genericInterface = @interface.GetGenericTypeDefinition();
+                            services.Add(new ServiceDescriptor(genericInterface, type, attribute.Lifetime));
                         }
                     }
                 }
@@ -39,17 +40,42 @@ namespace MyCourse.Domain.Extensions
                     {
                         foreach (var @interface in interfaces)
                         {
-                            services.Add(new ServiceDescriptor(@interface, type, attribute.Lifetime));
+                            switch (attribute.Lifetime)
+                            {
+                                case ServiceLifetime.Scoped:
+                                    services.AddScoped(@interface, type);
+                                    break;
+                                case ServiceLifetime.Transient:
+                                    services.AddTransient(@interface, type);
+                                    break;
+                                case ServiceLifetime.Singleton:
+                                    services.AddSingleton(@interface, type);
+                                    break;
+                                default:
+                                    throw new ArgumentOutOfRangeException();
+                            }
                         }
                     }
                     else
                     {
-                        services.Add(new ServiceDescriptor(type, type, attribute.Lifetime));
+                        switch (attribute.Lifetime)
+                        {
+                            case ServiceLifetime.Scoped:
+                                services.AddScoped(type);
+                                break;
+                            case ServiceLifetime.Transient:
+                                services.AddTransient(type);
+                                break;
+                            case ServiceLifetime.Singleton:
+                                services.AddSingleton(type);
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException();
+                        }
                     }
                 }
             }
         }
-
 
     }
 }

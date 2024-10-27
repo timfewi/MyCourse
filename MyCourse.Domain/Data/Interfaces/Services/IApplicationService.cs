@@ -11,6 +11,7 @@ namespace MyCourse.Domain.Data.Interfaces.Services
     {
         Task<IEnumerable<ApplicationDetailDto>> GetApplicationsByCourseIdAsync(int courseId);
         Task<ApplicationDetailDto> GetApplicationByIdAsync(int applicationId);
+        Task RegisterUserForCourseAsync(int courseId, ApplicationRegistrationDto dto);
         Task UpdateApplicationStatusAsync(ApplicationUpdateDto applicationDto);
         Task DeleteApplicationAsync(int applicationId);
     }

@@ -92,48 +92,6 @@ namespace MyCourse.Domain.Services.CourseServices
             await _courseRepository.SaveChangesAsync();
         }
 
-        // TODO
-        public async Task RegisterUserForCourseAsync(int courseId, ApplicationRegistrationDto dto)
-        {
-            // Validierung des DTOs (optional mit )
-            var validationResult = await _registrationDtoValidator.ValidateAsync(dto);
-            if (!validationResult.IsValid)
-            {
-                throw new ValidationException(validationResult.Errors);
-            }
-            // Überprüfe, ob der Kurs existiert
-            var course = await _courseRepository.GetCourseWithDetailsAsync(courseId);
-            if (course == null)
-            {
-                throw CourseExceptions.NotFound(courseId);
-            }
-
-            // Überprüfe, ob der Kurs aktiv ist
-            if (!course.IsActive)
-            {
-                throw CourseExceptions.InvalidOperation("Course is not active.", courseId);
-            }
-
-            // Überprüfe, ob der Kurs voll ist
-            if (course.Applications.Count >= course.MaxParticipants)
-            {
-                throw CourseExceptions.CourseFull(courseId);
-            }
-
-            // Überprüfe, ob der Benutzer bereits angemeldet ist
-            var existingApplication = await _applicationRepository.GetByCourseAndEmailAsync(courseId, dto.Email);
-            if (existingApplication != null)
-            {
-                throw CourseExceptions.InvalidOperation("User is already registered for this course.", courseId, new { dto.Email });
-            }
-
-            // Mapping vom DTO zur Entität
-            var application = _mapper.Map<Application>(dto);
-            application.CourseId = courseId;
-
-            await _applicationRepository.AddAsync(application);
-            await _applicationRepository.SaveChangesAsync();
-        }
     }
 
 }
