@@ -1,0 +1,18 @@
+## Application ##
+	- Exceptions 
+	- Dto Validation
+	- Mapping
+	- Repository
+	- Services
+	- Controllers
+	- Tests
+ 
+
+## Media ##
+	- Exceptions 
+	- Dto Validation
+	- Mapping
+	- Repository	
+	- Services
+	- Controllers
+	- Tests

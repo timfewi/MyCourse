@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Identity;
 using MyCourse.Domain.Entities;
 using MyCourse.Domain.Validation.EntityValidations;
 using MyCourse.Domain.Data.Seeders;
+using MyCourse.Domain.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -86,14 +87,22 @@ builder.Services.AddFluentValidationClientsideAdapters();
 // Register validators from MyCourse.Domain
 builder.Services.AddValidatorsFromAssemblyContaining<CourseValidator>();
 
+// Automatic DI register
+builder.Services.AddInjectables();
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+// Add Repositories
+
+
+// Add Services
 
 // AutoMapper
 builder.Services.AddAutoMapper(typeof(Program));
 
 // Add Middlewares
-builder.Services.AddScoped<ExceptionMiddleware>();
+builder.Services.AddTransient<ExceptionMiddleware>();
 
 // Memory Cache
 builder.Services.AddMemoryCache();

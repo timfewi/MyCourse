@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using MyCourse.Domain.Data;
@@ -8,25 +9,34 @@ public abstract class TestBase : IDisposable
 {
     protected readonly AppDbContext _context;
     private readonly IServiceProvider _serviceProvider;
+    protected readonly IServiceCollection _services;
 
     public TestBase()
     {
-        var serviceCollection = new ServiceCollection();
+        _services = new ServiceCollection();
 
         // Initialisiere den DbContext mit einer InMemory-Datenbank
-        serviceCollection.AddDbContext<AppDbContext>(options =>
+        _services.AddDbContext<AppDbContext>(options =>
             options.UseInMemoryDatabase(Guid.NewGuid().ToString()));
 
         // Initialisiere Identity
-        serviceCollection.AddIdentity<User, IdentityRole<int>>()
+        _services.AddIdentity<User, IdentityRole<int>>()
               .AddEntityFrameworkStores<AppDbContext>()
               .AddDefaultTokenProviders();
 
-        _serviceProvider = serviceCollection.BuildServiceProvider();
+        // Ermögliche abgeleiteten Klassen, zusätzliche Dienste zu konfigurieren
+        ConfigureServices(_services);
+
+        _serviceProvider = _services.BuildServiceProvider();
 
         _context = _serviceProvider.GetRequiredService<AppDbContext>();
 
         SeedDatabase();
+    }
+
+    protected virtual void ConfigureServices(IServiceCollection services)
+    {
+        // Kann von abgeleiteten Klassen überschrieben werden.
     }
 
     private void SeedDatabase()

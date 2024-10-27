@@ -14,6 +14,11 @@ namespace MyCourse.Domain.Data
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
+            Courses = Set<Course>();
+            Applications = Set<Application>();
+            Medias = Set<Media>();
+            CourseMedias = Set<CourseMedia>();
+            ApplicationMedias = Set<ApplicationMedia>();
         }
 
         public DbSet<Course> Courses { get; set; }
@@ -22,7 +27,6 @@ namespace MyCourse.Domain.Data
         public DbSet<CourseMedia> CourseMedias { get; set; }
         public DbSet<ApplicationMedia> ApplicationMedias { get; set; }
 
-
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -30,7 +34,6 @@ namespace MyCourse.Domain.Data
             builder.Entity<Course>()
                 .Property(c => c.Price)
                 .HasPrecision(18, 2);
-
         }
     }
 }
