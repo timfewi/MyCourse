@@ -11,6 +11,7 @@ namespace MyCourse.Domain.Data.Interfaces.Services
     public interface ICourseService
     {
         Task<IEnumerable<CourseListDto>> GetAllCoursesAsync();
+        Task<IEnumerable<CourseListDto>> GetAllActiveCoursesAsync();
         Task<CourseDetailDto> GetCourseByIdAsync(int courseId);
         Task CreateCourseAsync(CourseCreateDto courseDto);
         Task UpdateCourseAsync(CourseUpdateDto courseDto);

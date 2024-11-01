@@ -1,0 +1,22 @@
+﻿@{
+    ViewData["Title"] = "Zugriff verweigert";
+}
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="alert alert-danger text-center">
+            <h1>Zugriff verweigert</h1>
+            <p>Du hast keine Berechtigung, auf diese Seite zuzugreifen.</p>
+            <a href="@Url.Action("Login", "Account", new { area = "Admin" })" class="btn btn-primary">Zurück zur Login-Seite</a>
+        </div>
+    </div>
+</body>
+</html>

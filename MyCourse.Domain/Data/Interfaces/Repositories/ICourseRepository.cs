@@ -10,6 +10,7 @@ namespace MyCourse.Domain.Data.Interfaces.Repositories
     public interface ICourseRepository : IRepository<Course>
     {
         Task<IEnumerable<Course>> GetAllCoursesAsync();
+        Task<IEnumerable<Course>> GetAllActiveCoursesAsync();
         Task<Course?> GetCourseByIdAsync(int courseId);
         Task AddCourseAsync(Course course);
         void UpdateCourse(Course course);

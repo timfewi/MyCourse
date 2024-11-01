@@ -1,0 +1,73 @@
+﻿@model MyCourse.Web.Areas.Admin.Models.Dashboard.CourseCreateViewModel
+
+@{
+    ViewData["Title"] = "Neuen Kurs erstellen";
+}
+
+<h1 class="mt-4">Neuen Kurs erstellen</h1>
+
+<form asp-action="CreateCourse" method="post">
+    @Html.AntiForgeryToken()
+    <div class="form-group mb-3">
+        <label asp-for="Title" class="form-label"></label>
+        <input asp-for="Title" class="form-control" />
+        <span asp-validation-for="Title" class="text-danger"></span>
+    </div>
+    <div class="form-group mb-3">
+        <label asp-for="Description" class="form-label"></label>
+        <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+        <span asp-validation-for="Description" class="text-danger"></span>
+    </div>
+    <div class="form-group mb-3">
+        <label asp-for="CourseDate" class="form-label">Kursdatum</label>
+        <div class="input-group date" id="courseDatePicker" data-target-input="nearest">
+            <input asp-for="CourseDate" type="text" class="form-control" data-input />
+            <div class="input-group-append" data-toggle="flatpickr">
+                <div class="input-group-text"><i class="fas fa-calendar-alt"></i></div>
+            </div>
+        </div>
+        <span asp-validation-for="CourseDate" class="text-danger"></span>
+    </div>
+    <div class="form-group mb-3">
+        <label class="form-label">Kursdauer</label>
+        <div class="row">
+            <div class="col">
+                <input type="number" asp-for="CourseDurationHours" class="form-control" placeholder="Stunden" min="0" />
+                <span asp-validation-for="CourseDurationHours" class="text-danger"></span>
+            </div>
+            <div class="col">
+                <input type="number" asp-for="CourseDurationMinutes" class="form-control" placeholder="Minuten" min="0" max="59" />
+                <span asp-validation-for="CourseDurationMinutes" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+    <div class="form-group mb-3">
+        <label asp-for="MaxParticipants" class="form-label"></label>
+        <input asp-for="MaxParticipants" type="number" class="form-control" min="1" max="1000" />
+        <span asp-validation-for="MaxParticipants" class="text-danger"></span>
+    </div>
+    <div class="form-group mb-3">
+        <label asp-for="Location" class="form-label"></label>
+        <input asp-for="Location" class="form-control" />
+        <span asp-validation-for="Location" class="text-danger"></span>
+    </div>
+    <div class="form-group mb-3">
+        <label asp-for="Price" class="form-label"></label>
+        <input asp-for="Price" type="number" step="0.01" class="form-control" min="0" />
+        <span asp-validation-for="Price" class="text-danger"></span>
+    </div>
+    <div class="form-check mb-3">
+        <input asp-for="IsActive" class="form-check-input" />
+        <label asp-for="IsActive" class="form-check-label"></label>
+    </div>
+    <button type="submit" class="btn btn-primary">
+        <i class="fas fa-save"></i> Speichern
+    </button>
+    <a asp-action="Index" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Zurück
+    </a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

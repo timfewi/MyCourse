@@ -1,0 +1,16 @@
+﻿@* Areas/Admin/Views/Home/Index.cshtml *@
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<h1>Willkommen im Admin-Dashboard</h1>
+<p>Dies ist die zentrale Verwaltungsseite deiner Anwendung.</p>
+
+@if (User.Identity != null && User.Identity.IsAuthenticated)
+{
+    <p>Angemeldet als: @User.Identity.Name</p>
+}
+else
+{
+    <p>Du bist nicht angemeldet.</p>
+}

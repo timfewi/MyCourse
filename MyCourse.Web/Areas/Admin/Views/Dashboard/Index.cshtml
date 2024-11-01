@@ -1,0 +1,39 @@
+﻿@model MyCourse.Web.Areas.Admin.Models.Dashboard.DashboardViewModel
+
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<h1>Willkommen im Admin Dashboard</h1>
+
+<div class="row">
+    <!-- Beispiel für ein Dashboard-Widget -->
+    <div class="col-md-4">
+        <div class="card text-white bg-primary mb-3">
+            <div class="card-header"><i class="fas fa-book"></i> Aktive Kurse</div>
+            <div class="card-body">
+                <h5 class="card-title">@Model.ActiveCoursesCount</h5>
+                <p class="card-text">Anzahl der derzeit aktiven Kurse.</p>
+            </div>
+        </div>
+    </div>
+    <!-- Weitere Widgets -->
+    <div class="col-md-4">
+        <div class="card text-white bg-success mb-3">
+            <div class="card-header"><i class="fas fa-users"></i> Anmeldungen</div>
+            <div class="card-body">
+                <h5 class="card-title">@Model.TotalRegistrations</h5>
+                <p class="card-text">Gesamte Kursanmeldungen.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-warning mb-3">
+            <div class="card-header"><i class="fas fa-chart-line"></i> Statistiken</div>
+            <div class="card-body">
+                <h5 class="card-title">@Model.Statistics</h5>
+                <p class="card-text">Kursstatistiken und Trends.</p>
+            </div>
+        </div>
+    </div>
+</div>

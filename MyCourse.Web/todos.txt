@@ -16,3 +16,8 @@
 	- Services
 	- Controllers
 	- Tests
+
+
+
+	Features 
+	- Logout

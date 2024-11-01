@@ -13,14 +13,20 @@ namespace MyCourse.Domain.MappingProfiles
     {
         public CourseProfile()
         {
+            // List DTO
             CreateMap<Course, CourseListDto>();
+
+            // Detail DTO
             CreateMap<Course, CourseDetailDto>()
                 .ForMember(dest => dest.ApplicationCount, opt => opt.MapFrom(src => src.Applications.Count));
 
+            // Create DTO
             CreateMap<CourseCreateDto, Course>();
+            // Update DTO
             CreateMap<CourseUpdateDto, Course>();
-
             CreateMap<Course, CourseUpdateDto>();
+
+
         }
     }
 }

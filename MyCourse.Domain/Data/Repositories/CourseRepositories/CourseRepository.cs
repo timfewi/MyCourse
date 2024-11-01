@@ -22,6 +22,12 @@ namespace MyCourse.Domain.Data.Repositories.CourseRepositories
             return await _dbSet.Include(c => c.Applications).ToListAsync();
         }
 
+        public async Task<IEnumerable<Course>> GetAllActiveCoursesAsync()
+        {
+            var activeCourses = await _dbSet.Where(c => c.IsActive).ToListAsync();
+            return activeCourses;
+        }
+
         public async Task<Course?> GetCourseByIdAsync(int courseId)
         {
             return await _dbSet

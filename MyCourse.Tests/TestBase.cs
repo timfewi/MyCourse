@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging;
 using MyCourse.Domain.Data;
 using MyCourse.Domain.Entities;
 using MyCourse.Domain.Extensions;
@@ -13,7 +15,7 @@ using System.Reflection;
 public abstract class TestBase : IDisposable
 {
     protected readonly AppDbContext _context;
-    protected readonly IServiceProvider _serviceProvider;
+    protected IServiceProvider _serviceProvider;
     protected readonly IServiceCollection _services;
 
     public TestBase()
@@ -31,6 +33,9 @@ public abstract class TestBase : IDisposable
 
         // AutoMapper
         _services.AddAutoMapper(Assembly.GetAssembly(typeof(TestBase)));
+
+        // Registriere ILogger<T> mit NullLogger<T>
+        _services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
 
         // Füge FluentValidation hinzu
         _services.AddFluentValidationAutoValidation();

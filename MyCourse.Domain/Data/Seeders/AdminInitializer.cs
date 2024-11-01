@@ -37,8 +37,19 @@ namespace MyCourse.Domain.Data.Seeders
                 {
                     await userManager.AddToRoleAsync(adminUser, "ADMIN");
                 }
+                else
+                {
+                    throw new Exception("Failed to create admin user.");
+                }
             }
-
+            else
+            {
+                // Sicherstellen, dass der Benutzer die Admin-Rolle hat
+                if (!await userManager.IsInRoleAsync(adminUser, "ADMIN"))
+                {
+                    await userManager.AddToRoleAsync(adminUser, "ADMIN");
+                }
+            }
         }
     }
 }

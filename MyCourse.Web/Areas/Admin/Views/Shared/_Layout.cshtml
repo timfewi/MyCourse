@@ -1,0 +1,120 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using MyCourse.Domain.Entities
+@inject SignInManager<User> SignInManager
+@inject UserManager<User> UserManager
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - MyCourse.Admin</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/font-awesome/css/all.min.css" />
+    <link rel="stylesheet" href="~/lib/flatpickr/flatpickr.min.css" />
+    <link rel="stylesheet" href="~/lib/fontawesome-iconpicker/css/fontawesome-iconpicker.min.css" />
+    <link rel="stylesheet" href="~/lib/toastr.js/toastr.min.css" />
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/MyCourse.Web.styles.css" asp-append-version="true" />
+</head>
+<body>
+    @* Bedingte Anzeige der Sidebar *@
+    @if (User.Identity != null && User.Identity.IsAuthenticated && User.IsInRole("ADMIN"))
+    {
+        <div class="d-flex" id="wrapper">
+            <!-- Sidebar -->
+            <nav id="sidebar" class="bg-dark border-right">
+                <div class="sidebar-heading text-white">Admin Panel</div>
+                <div class="list-group list-group-flush">
+                    <a href="@Url.Action("Index", "Dashboard", new { area = "Admin" })" class="list-group-item list-group-item-action bg-dark text-white">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a>
+                    <a href="@Url.Action("CreateCourse", "Dashboard", new { area = "Admin" })" class="list-group-item list-group-item-action bg-dark text-white">
+                        <i class="fas fa-plus-circle"></i> Kurs erstellen
+                    </a>
+                    <a href="@Url.Action("ListCourses", "Dashboard", new { area = "Admin" })" class="list-group-item list-group-item-action bg-dark text-white">
+                        <i class="fas fa-list"></i> Kurse verwalten
+                    </a>
+                    <!-- Weitere Admin-Navigationselemente hier hinzufügen -->
+                    <form id="logout-form" asp-area="Admin" asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="list-group-item list-group-item-action bg-dark text-white border-0" style="cursor: pointer;">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </button>
+                    </form>
+
+                </div>
+            </nav>
+            <!-- /#sidebar -->
+            <!-- Page Content -->
+            <div id="page-content-wrapper" class="w-100">
+                <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
+                    <button class="btn btn-primary" id="menu-toggle"><i class="fas fa-bars"></i></button>
+                </nav>
+
+                <div class="container-fluid mt-4">
+                    @RenderBody()
+                </div>
+            </div>
+            <!-- /#page-content-wrapper -->
+        </div>
+        <!-- /#wrapper -->
+    }
+    else
+    {
+        <!-- Fallback content, falls der Benutzer kein Admin ist -->
+        <div class="container">
+            @RenderBody()
+        </div>
+    }
+
+
+
+    <footer class="border-top footer text-muted mt-4">
+        <div class="container">
+            &copy; 2024 - MyCourse.Admin - <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Dashboard</a>
+        </div>
+    </footer>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/flatpickr/flatpickr.min.js"></script>
+    <script src="~/lib/toastr.js/toastr.min.js"></script>
+    <script src="~/lib/font-awesome/js/all.min.js"></script>
+    <script src="~/lib/fontawesome-iconpicker/js/fontawesome-iconpicker.min.js"></script>
+    <script src="~/js/admin.js" asp-append-version="true"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <script>
+        $(document).ready(function () {
+            @* Toastr-Benachrichtigungen basierend auf TempData *@
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <text>
+                    toastr.success("@TempData["SuccessMessage"]", "Erfolg");
+                </text>
+            }
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <text>
+            toastr.error("@TempData["ErrorMessage"]", "Fehler");
+                </text>
+            }
+            @if (TempData["InfoMessage"] != null)
+            {
+                <text>
+                    toastr.info("@TempData["InfoMessage"]", "Info");
+                </text>
+            }
+            @if (TempData["WarningMessage"] != null)
+            {
+                <text>
+                    toastr.warning("@TempData["WarningMessage"]", "Warnung");
+                </text>
+            }
+        });
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

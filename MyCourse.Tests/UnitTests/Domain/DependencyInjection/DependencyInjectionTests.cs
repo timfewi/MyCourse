@@ -113,7 +113,7 @@ namespace MyCourse.Tests.UnitTests.Domain.DependencyInjection
                 if (type.IsGenericTypeDefinition)
                 {
                     // Generische Typen erfordern spezielle Auflösung
-                    // Überspringe sie hier und teste sie separat
+                    // Wird seperat getestet
                     continue;
                 }
 

@@ -39,6 +39,7 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(connectionString));
 
+
 // Add Identity
 builder.Services.AddIdentity<User, IdentityRole<int>>(options =>
 {
@@ -52,27 +53,14 @@ builder.Services.AddIdentity<User, IdentityRole<int>>(options =>
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
 
-// Add Authentication with JWT
-builder.Services.AddAuthentication(options =>
+// Cookie-Einstellungen konfigurieren (optional)
+builder.Services.ConfigureApplicationCookie(options =>
 {
-    options.DefaultAuthenticateScheme = "JwtBearer";
-    options.DefaultChallengeScheme = "JwtBearer";
-})
-    .AddJwtBearer("JwtBearer", options =>
-    {
-        options.RequireHttpsMetadata = false; // only for development
-        options.SaveToken = true;
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
-        };
-    });
+    options.LoginPath = "/Admin/Account/Login"; // Pfad zur Admin-Login-Seite
+    options.AccessDeniedPath = "/Admin/Error/AccessDenied"; // Pfad für Zugriff verweigert
+    options.ExpireTimeSpan = TimeSpan.FromDays(14); // Ablaufzeit für persistente Cookies
+    options.SlidingExpiration = true; // Automatische Verlängerung der Ablaufzeit bei Aktivität
+});
 
 // Add Authorization
 builder.Services.AddAuthorization(options =>
@@ -102,6 +90,8 @@ builder.Services.AddTransient<ExceptionMiddleware>();
 
 // Memory Cache
 builder.Services.AddMemoryCache();
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -119,6 +109,11 @@ app.UseRouting();
 
 app.UseAuthentication(); 
 app.UseAuthorization();
+
+
+app.MapControllerRoute(
+    name: "areas",
+    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
 
 app.MapControllerRoute(
     name: "default",
