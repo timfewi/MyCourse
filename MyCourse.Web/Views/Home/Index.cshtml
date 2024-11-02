@@ -5,7 +5,7 @@
 }
 
 <!-- Banner Section -->
-<section class="bg-primary text-white text-center py-5" style="background-image: url('~/images/banner.jpg'); background-size: cover; background-position: center;">
+<section class="bg-primary text-white text-center py-5" style="background-image: url('images/placeholder.png'); background-size: cover; background-position: center;">
     <div class="container">
         <h1 class="display-4">Willkommen bei MyCourse</h1>
         <p class="lead">Entdecke spannende Kurse und erweitere dein Wissen.</p>
@@ -24,7 +24,7 @@
                 {
                     <div class="col-md-4 mb-4">
                         <div class="card h-100">
-                            <img src="@*@course.ImageUrl*@" class="card-img-top" alt="@course.Title">
+                            <img src="/images/placeholder.png" class="card-img-top" alt="@course.Title">
                             <div class="card-body d-flex flex-column">
                                 <h5 class="card-title">@course.Title</h5>
                                 <p class="card-text">
@@ -38,11 +38,25 @@
                                     }
                                 </p>
                                 <div class="mt-auto">
-                                    <p class="mb-1"><strong>Datum:</strong> @course.CourseDate.ToString("dd.MM.yyyy")</p>
-                                    <p class="mb-3"><strong>Dauer:</strong> @course.CourseDuration.Hours Stunden @course.CourseDuration.Minutes Minuten</p>
-                                    <a href="@Url.Action("Details", "Courses", new { id = course.Id })" class="btn btn-primary">Details</a>
-                                    <a href="@Url.Action("Register", "Courses", new { id = course.Id })" class="btn btn-success ms-2">Anmelden</a>
+                                    <a href="@Url.Action("Details", "Course", new { id = course.Id })" class="btn btn-primary me-2">Details</a>
+                                    <a href="@Url.Action("Register", "Course", new { id = course.Id })" class="btn btn-success">Anmelden</a>
                                 </div>
+                                @*<div class="mt-auto">
+            <button type="button" class="btn btn-primary me-2"
+                    data-bs-toggle="modal"
+                    data-bs-target="#detailsModal"
+                    data-course-id="@course.Id"
+                    data-details-url="@Url.Action("Details", "Course", new { id = course.Id })">
+                Details
+            </button>
+            <button type="button" class="btn btn-success"
+                    data-bs-toggle="modal"
+                    data-bs-target="#registerModal"
+                    data-course-id="@course.Id"
+                    data-register-url="@Url.Action("Register", "Course", new { id = course.Id })">
+                Anmelden
+            </button>
+        </div>*@
                             </div>
                         </div>
                     </div>
@@ -78,3 +92,26 @@
         </div>
     </div>
 </section>
+
+<!-- Course Details Modal -->
+<!--<div class="modal fade" id="detailsModal" tabindex="-1" aria-labelledby="detailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">-->
+            <!-- Inhalte werden per AJAX geladen -->
+        <!--</div>
+    </div>
+</div>-->
+
+<!-- Course Register Modal -->
+<!--<div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">-->
+            <!-- Inhalte werden per AJAX geladen -->
+        <!--</div>
+    </div>
+</div>-->
+
+
+@section Scripts{
+    @*<script src="~/js/course.js" defer></script>*@
+}

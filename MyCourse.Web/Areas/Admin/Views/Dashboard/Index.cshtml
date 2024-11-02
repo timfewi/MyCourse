@@ -37,3 +37,137 @@
         </div>
     </div>
 </div>
+
+<!-- Benutzerdefinierte CSS-Stile -->
+<style>
+    /* Schriftgröße in der Tabelle reduzieren */
+    .table-responsive-sm {
+        font-size: 0.9rem;
+    }
+
+        /* Verhindert Zeilenumbrüche in Tabellenzellen */
+        .table-responsive-sm td, .table-responsive-sm th {
+            white-space: nowrap;
+        }
+
+        /* Passt die Schriftgröße der Aktionen an */
+        .table-responsive-sm .btn {
+            font-size: 0.8rem;
+            padding: 0.25rem 0.5rem;
+        }
+</style>
+
+<!-- Tabelle für Anmeldungen -->
+@foreach (var course in Model.CoursesWithApplications)
+{
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5><i class="fas fa-book-open me-2"></i>@course.Title - @course.CourseDate</h5>
+        </div>
+        <div class="card-body">
+            @if (course.Applications.Any())
+            {
+                <div class="table-responsive table-responsive-sm">
+                    <table class="table table-striped table-hover table-sm">
+                        <thead>
+                            <tr>
+                                <th>Anmeldung ID</th>
+                                <th>Name</th>
+                                <th>E-Mail</th>
+                                <th>Telefon</th>
+                                <th>Erfahrung</th>
+                                <th>Bevorzugter Stil</th>
+                                <th>Kommentar</th>
+                                <th>Status</th>
+                                <th>Datum</th>
+                                <th>Aktionen</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var application in course.Applications)
+                            {
+                                <tr>
+                                    <td>@application.Id</td>
+                                    <td>@($"{application.FirstName} {application.LastName}")</td>
+                                    <td>@application.Email</td>
+                                    <td>@application.PhoneNumber</td>
+                                    <td>@application.ExperienceLevel</td>
+                                    <td>@application.PreferredStyle</td>
+                                    <td>@application.Comments</td>
+                                    <td>
+                                        @switch (application.Status)
+                                        {
+                                            case MyCourse.Domain.Enums.ApplicationStatusType.Pending:
+                                                <span class="badge bg-warning text-dark">Ausstehend</span>
+                                                break;
+                                            case MyCourse.Domain.Enums.ApplicationStatusType.Approved:
+                                                <span class="badge bg-success">Akzeptiert</span>
+                                                break;
+                                            case MyCourse.Domain.Enums.ApplicationStatusType.Rejected:
+                                                <span class="badge bg-danger">Abgelehnt</span>
+                                                break;
+                                            case MyCourse.Domain.Enums.ApplicationStatusType.Waiting:
+                                                <span class="badge bg-info">Warteliste</span>
+                                                break;
+                                            default:
+                                                <span class="badge bg-secondary">@application.Status</span>
+                                                break;
+                                        }
+                                    </td>
+                                    <td>@application.ApplicationDate.ToString("dd.MM.yyyy HH:mm")</td>
+                                    <td>
+                                        @if (application.Status == MyCourse.Domain.Enums.ApplicationStatusType.Pending ||
+                                           application.Status == MyCourse.Domain.Enums.ApplicationStatusType.Waiting ||
+                                           application.Status == MyCourse.Domain.Enums.ApplicationStatusType.Approved ||
+                                           application.Status == MyCourse.Domain.Enums.ApplicationStatusType.Rejected)
+                                        {
+                                            <div class="d-flex flex-wrap">
+                                                <form asp-action="AcceptApplication" method="post" class="me-1 mb-1">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="applicationId" value="@application.Id" />
+                                                    <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Möchten Sie diese Anmeldung akzeptieren?');">
+                                                        <i class="fas fa-check-circle"></i>
+                                                    </button>
+                                                </form>
+                                                <form asp-action="RejectApplication" method="post" class="me-1 mb-1">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="applicationId" value="@application.Id" />
+                                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Möchten Sie diese Anmeldung ablehnen?');">
+                                                        <i class="fas fa-times-circle"></i>
+                                                    </button>
+                                                </form>
+                                                <form asp-action="SetToWaitingList" method="post" class="mb-1">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="applicationId" value="@application.Id" />
+                                                    <button type="submit" class="btn btn-sm btn-secondary" onclick="return confirm('Möchten Sie diese Anmeldung auf die Warteliste setzen?');">
+                                                        <i class="fas fa-hourglass-half"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        }
+                                        else if (application.Status == MyCourse.Domain.Enums.ApplicationStatusType.Approved)
+                                        {
+                                            <div class="d-flex flex-wrap">
+                                                <!-- Aktionen für akzeptierte Anmeldungen -->
+                                                <!-- Sie können hier weitere Aktionen hinzufügen -->
+                                                <span class="text-muted">Keine weiteren Aktionen erforderlich</span>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Keine Aktionen verfügbar</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <p class="text-muted">Keine Anmeldungen für diesen Kurs.</p>
+            }
+        </div>
+    </div>
+}

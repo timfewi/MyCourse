@@ -31,7 +31,7 @@ namespace MyCourse.Domain.Exceptions.ApplicationEx
         {
             return new ApplicationException(
                 ApplicationErrorCode.DuplicateApplication,
-                $"User with email {email} has already applied for course ID {courseId}.",
+                $"Mit der E-Mail-Adresse '{email}' sind Sie bereits für diesen Kurs angemeldet.",
                 additionalData: new { email, courseId }
             );
         }

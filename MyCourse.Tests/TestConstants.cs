@@ -35,14 +35,14 @@ namespace MyCourse.Tests
         public const string ValidEmail = "test@example.com";
         public const string ValidPhoneNumber = "+436701234567";
         public static readonly DateTime ValidApplicationDate = DateTime.Now;
-        public const ApplicationStatusType ValidStatus = ApplicationStatusType.Applied;
+        public const ApplicationStatusType ValidStatus = ApplicationStatusType.Approved;
         // Invalid-Data
         public const string InvalidFirstName = null;
         public const string InvalidLastName = null;
         public const string InvalidEmail = null;
         public const string InvalidPhoneNumber = null;
         public static readonly DateTime InvalidApplicationDate = DateTime.MinValue;
-        public const ApplicationStatusType InvalidStatus = ApplicationStatusType.Applied;
+        public const ApplicationStatusType InvalidStatus = ApplicationStatusType.Approved;
 
         // Media Testdata
         // Valid-Data

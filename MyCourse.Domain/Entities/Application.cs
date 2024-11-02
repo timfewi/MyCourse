@@ -25,11 +25,18 @@ namespace MyCourse.Domain.Entities
         [PersonalData]
         public string PhoneNumber { get; set; } = string.Empty.PadLeft(10, '0');
         public DateTime ApplicationDate { get; set; } = DateTime.Now;
-        public ApplicationStatusType Status {  get; set; }
+        public ApplicationStatusType Status { get; set; }
+
+        [PersonalData]
+        public string? ExperienceLevel { get; set; }
+        [PersonalData]
+        public string? PreferredStyle { get; set; }
+        [PersonalData]
+        public string? Comments { get; set; }
 
         // Navigation Properties
         [ForeignKey(nameof(CourseId))]
-        public Course Course { get; set; } = new();
+        public Course Course { get; set; } = default!;
         public ICollection<ApplicationMedia> ApplicationMedias { get; set; } = [];
     }
 }

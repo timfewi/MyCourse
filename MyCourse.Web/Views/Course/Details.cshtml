@@ -1,0 +1,82 @@
+﻿@model MyCourse.Web.Models.CourseModels.CourseDetailsViewModel
+
+@{
+    ViewData["Title"] = @Model.Title;
+}
+
+<div class="container my-5">
+    <div class="row">
+        <div class="col-md-8">
+            <h1>@Model.Title</h1>
+            <!-- Bildbereich -->
+            @if (!string.IsNullOrEmpty(Model.ImageUrl))
+            {
+                <div class="mb-4">
+                    <img src="@Model.ImageUrl" class="img-fluid rounded" alt="@Model.Title">
+                </div>
+            }
+            else
+            {
+                <!-- Platzhalterbild -->
+                <div class="mb-4">
+                    <img src="~/images/placeholder.png" class="img-fluid rounded" alt="Platzhalterbild">
+                </div>
+            }
+
+            <!-- Kursbeschreibung -->
+            <h3 class="mt-4">
+                <i class="fas fa-book-open text-primary me-2"></i>Kursbeschreibung
+            </h3>
+            <p>@Model.Description</p>
+
+            <!-- Zusätzliche Informationen -->
+            <h3 class="mt-4">
+                <i class="fas fa-palette text-primary me-2"></i>Über den Kurs
+            </h3>
+            <p>In diesem Malkurs lernen Sie verschiedene Techniken und Stile kennen. Geeignet für Anfänger und Fortgeschrittene.</p>
+        </div>
+        <div class="col-md-4">
+            <!-- Kursinformationen -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h4 class="card-title">Kursdetails</h4>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="fas fa-calendar-alt text-primary me-2"></i>
+                            <strong>Datum:</strong> @Model.CourseDate.ToString("dd.MM.yyyy")
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-clock text-primary me-2"></i>
+                            <strong>Dauer:</strong> @Model.CourseDuration.Hours Std @Model.CourseDuration.Minutes Min
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-users text-primary me-2"></i>
+                            <strong>Anmeldungen:</strong> @Model.ApplicationCount / @Model.MaxParticipants
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                            <strong>Ort:</strong> @Model.Location
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-euro-sign text-primary me-2"></i>
+                            <strong>Preis:</strong> @Model.Price €
+                        </li>
+                    </ul>
+                    <a href="@Url.Action("Register", "Course", new { id = Model.Id })" class="btn btn-success w-100">
+                        <i class="fas fa-check-circle me-2"></i>Anmelden
+                    </a>
+                </div>
+            </div>
+            <!-- Kontaktinformationen -->
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">Kontaktinformationen</h4>
+                    <p><i class="fas fa-user text-primary me-2"></i><strong>Ansprechpartner:</strong> Max Mustermann</p>
+                    <p><i class="fas fa-envelope text-primary me-2"></i><strong>E-Mail:</strong> <a href="mailto:info@mycourse.de">info@mycourse.de</a></p>
+                    <p><i class="fas fa-phone text-primary me-2"></i><strong>Telefon:</strong> +49 123 4567890</p>
+                    <p><i class="fas fa-globe text-primary me-2"></i><strong>Website:</strong> <a href="https://www.mycourse.de">www.mycourse.de</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

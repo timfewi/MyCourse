@@ -27,5 +27,12 @@ namespace MyCourse.Domain.DTOs.ApplicationDtos
         [Phone]
         [PersonalData]
         public string PhoneNumber { get; set; } = string.Empty;
+
+        [PersonalData]
+        public string? ExperienceLevel {  get; set; } = string.Empty;
+        [PersonalData]
+        public string? PreferredStyle { get; set; }
+        [PersonalData]
+        public string? Comments {  get; set; } = string.Empty;
     }
 }

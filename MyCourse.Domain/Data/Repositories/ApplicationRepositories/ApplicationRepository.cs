@@ -40,8 +40,10 @@ namespace MyCourse.Domain.Data.Repositories.ApplicationRepositories
         }
         public async Task<Application?> GetByCourseAndEmailAsync(int courseId, string email)
         {
-            return await _dbSet.FirstOrDefaultAsync(a => a.CourseId == courseId && a.Email == email);
+            string normalizedEmail = email.Trim().ToLower();
+            return await _dbSet.FirstOrDefaultAsync(a => a.CourseId == courseId && a.Email == normalizedEmail);
         }
+
     }
 
 }

@@ -55,6 +55,10 @@ namespace MyCourse.Domain.Services.ApplicationService
 
         public async Task RegisterUserForCourseAsync(int courseId, ApplicationRegistrationDto dto)
         {
+            if (courseId <= 0)
+            {
+                throw new ArgumentException("CourseId is invalid. Course not available.");
+            }
             // Validierung der Eingabedaten mit FluentValidation
             var validationResult = await _registrationDtoValidator.ValidateAsync(dto);
             if (!validationResult.IsValid)
@@ -130,6 +134,50 @@ namespace MyCourse.Domain.Services.ApplicationService
         {
             return (currentStatus == ApplicationStatusType.Pending &&
                     (newStatus == ApplicationStatusType.Approved || newStatus == ApplicationStatusType.Rejected));
+        }
+
+        public async Task AcceptApplicationAsync(int applicationId)
+        {
+            var application = await _applicationRepository.GetByIdAsync(applicationId);
+            if (application == null)
+            {
+                throw ApplicationExceptions.NotFound(applicationId);
+            }
+
+            application.Status = ApplicationStatusType.Approved;
+            application.DateUpdated = DateTime.Now;
+
+            _applicationRepository.UpdateApplication(application);
+            await _applicationRepository.SaveChangesAsync();
+        }
+
+        public async Task RejectApplicationAsync(int applicationId)
+        {
+            var application = await _applicationRepository.GetByIdAsync(applicationId);
+            if (application == null)
+            {
+                throw ApplicationExceptions.NotFound(applicationId);
+            }
+
+            application.Status = ApplicationStatusType.Rejected;
+            application.DateUpdated = DateTime.Now;
+
+            _applicationRepository.UpdateApplication(application);
+            await _applicationRepository.SaveChangesAsync();
+        }
+        public async Task SetApplicationToWaitingListAsync(int applicationId)
+        {
+            var application = await _applicationRepository.GetByIdAsync(applicationId);
+            if (application == null)
+            {
+                throw ApplicationExceptions.NotFound(applicationId);
+            }
+
+            application.Status = ApplicationStatusType.Waiting;
+            application.DateUpdated = DateTime.Now;
+
+            _applicationRepository.UpdateApplication(application);
+            await _applicationRepository.SaveChangesAsync();
         }
     }
 

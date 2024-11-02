@@ -17,6 +17,10 @@ namespace MyCourse.Domain.DTOs.ApplicationDtos
         public string PhoneNumber { get; set; } = string.Empty;
         public DateTime ApplicationDate { get; set; }
         public ApplicationStatusType Status { get; set; }
+        public string StatusDisplayName { get; set; } = default!;
+        public string? ExperienceLevel { get; set; }
+        public string? PreferredStyle { get; set; }
+        public string? Comments { get; set; }
     }
 
 }

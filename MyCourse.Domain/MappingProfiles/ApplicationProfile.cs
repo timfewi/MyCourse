@@ -2,6 +2,7 @@
 using MyCourse.Domain.DTOs.ApplicationDtos;
 using MyCourse.Domain.Entities;
 using MyCourse.Domain.Enums;
+using MyCourse.Domain.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +16,9 @@ namespace MyCourse.Domain.MappingProfiles
         public ApplicationProfile() 
         {
 
-            CreateMap<Application, ApplicationDetailDto>();
+            CreateMap<Application, ApplicationDetailDto>()
+                            .ForMember(dest => dest.StatusDisplayName, opt => opt.MapFrom(src => src.Status.GetDisplayName()));
+
             CreateMap<ApplicationUpdateDto, Application>();
 
             CreateMap<ApplicationRegistrationDto, Application>()

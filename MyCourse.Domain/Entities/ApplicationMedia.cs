@@ -12,8 +12,8 @@ namespace MyCourse.Domain.Entities
         public int ApplicationId { get; set; }
         public int MediaId { get; set; }
         [ForeignKey(nameof(ApplicationId))]
-        public Application Application { get; set; } = new();
+        public Application Application { get; set; } = default!;
         [ForeignKey(nameof(MediaId))]
-        public Media Media { get; set; } = new();
+        public Media Media { get; set; } = default!;
     }
 }

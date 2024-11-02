@@ -20,3 +20,31 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+/* Modal-Titel */
+.modal-title i {
+    font-size: 1.25rem;
+}
+
+/* Formular-Labels */
+.form-label i {
+    font-size: 1rem;
+}
+
+/* Kursbeschreibung Überschrift */
+.modal-body h5 {
+    color: #0d6efd;
+    font-weight: bold;
+}
+
+/* Icons in Kursinformationen */
+.modal-body .row i {
+    font-size: 1.25rem;
+}
+
+/* Abstand zwischen den Informationen */
+.modal-body .row > div {
+    display: flex;
+    align-items: center;
+}
+

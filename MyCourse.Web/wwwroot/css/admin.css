@@ -6,8 +6,8 @@
 
 /* Sidebar Styles */
 #sidebar {
-    min-width: 250px;
-    max-width: 250px;
+    min-width: 200px;
+    max-width: 200px;
     min-height: 100vh;
     transition: all 0.3s;
 }
@@ -42,3 +42,4 @@
             margin-left: 0;
         }
 }
+

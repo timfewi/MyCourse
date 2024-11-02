@@ -14,6 +14,9 @@ namespace MyCourse.Domain.Data.Interfaces.Services
         Task RegisterUserForCourseAsync(int courseId, ApplicationRegistrationDto dto);
         Task UpdateApplicationStatusAsync(ApplicationUpdateDto applicationDto);
         Task DeleteApplicationAsync(int applicationId);
+        Task AcceptApplicationAsync(int applicationId);
+        Task RejectApplicationAsync(int applicationId);
+        Task SetApplicationToWaitingListAsync(int applicationId);
     }
 
 }
