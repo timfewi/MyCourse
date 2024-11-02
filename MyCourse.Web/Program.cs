@@ -12,6 +12,8 @@ using MyCourse.Domain.Validation.EntityValidations;
 using MyCourse.Domain.Data.Seeders;
 using MyCourse.Domain.Extensions;
 using MyCourse.Domain.MappingProfiles;
+using System.Configuration;
+using MyCourse.Domain.POCOs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -68,6 +70,8 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("AdminOnly", policy => policy.RequireRole("ADMIN"));
 });
 
+// Binden der SMTP-Einstellungen
+builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpSettings"));
 
 // FluentValidation registrieren
 builder.Services.AddFluentValidationAutoValidation();

@@ -1,8 +1,11 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Humanizer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyCourse.Domain.Data.Interfaces.Services;
 using MyCourse.Domain.DTOs.CourseDtos;
 using MyCourse.Web.Areas.Admin.Models.Dashboard;
+using System.Net;
+using System.Net.Mail;
 
 namespace MyCourse.Web.Areas.Admin.Controllers
 {
@@ -13,16 +16,18 @@ namespace MyCourse.Web.Areas.Admin.Controllers
         private readonly ILogger<DashboardController> _logger;
         private readonly ICourseService _courseService;
         private readonly IApplicationService _applicationService;
-
+        private readonly IEmailService _emailService;
         public DashboardController(
             ILogger<DashboardController> logger,
             ICourseService courseService,
-            IApplicationService applicationService)
+            IApplicationService applicationService,
+            IEmailService emailService)
         {
 
             _logger = logger;
             _courseService = courseService;
             _applicationService = applicationService;
+            _emailService = emailService;
         }
 
 
@@ -55,7 +60,7 @@ namespace MyCourse.Web.Areas.Admin.Controllers
                             ApplicationDate = a.ApplicationDate,
                             Status = a.Status,
                             StatusDisplayName = a.StatusDisplayName,
-                            
+
                         }).ToList()
                     };
                     coursesWithApplications.Add(courseDto);
@@ -121,13 +126,37 @@ namespace MyCourse.Web.Areas.Admin.Controllers
                 return View(viewModel);
             }
         }
-
+       
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AcceptApplication(int applicationId)
         {
             try
             {
+
+                var application = await _applicationService.GetApplicationByIdAsync(applicationId);
+                var course = await _courseService.GetCourseByIdAsync(application.CourseId);
+                if (application == null)
+                {
+                    throw new Exception($"Anmeldung mit ID {applicationId} nicht gefunden.");
+                }
+
+                var subject = "Ihre Kursanmeldung wurde akzeptiert";
+                var message = $@"
+                    <html>
+                        <body style='font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;'>
+                            <div style='background-color: #ffffff; padding: 20px; border-radius: 5px;'>
+                                <h1 style='color: #4CAF50;'>Hallo {application.FirstName} {application.LastName},</h1>
+                                <p>Ihre Anmeldung für den Kurs <strong>{course.Title}</strong> wurde <strong>akzeptiert</strong>.</p>
+                                <p>Wir freuen uns, Sie im Kurs begrüßen zu dürfen!</p>
+                                <p>Mit freundlichen Grüßen,<br/>Ihr Team</p>
+                                <hr style='border: none; border-top: 1px solid #ddd;' />
+                                <p style='font-size: 12px; color: #888888;'>&copy; {DateTime.Now.Year} Alexandra Hearts. Alle Rechte vorbehalten.</p>
+                            </div>
+                        </body>
+                    </html>";
+
+                await _emailService.SendEmailAsync(application.Email, subject, message);
                 await _applicationService.AcceptApplicationAsync(applicationId);
                 TempData["SuccessMessage"] = "Die Anmeldung wurde erfolgreich akzeptiert.";
             }
@@ -139,6 +168,7 @@ namespace MyCourse.Web.Areas.Admin.Controllers
 
             return RedirectToAction(nameof(Index));
         }
+
 
 
         [HttpPost]
