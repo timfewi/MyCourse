@@ -38,11 +38,22 @@ namespace MyCourse.Domain.MappingProfiles
 
             // Create DTO
             CreateMap<CourseCreateDto, Course>();
+
             // Update DTO
-            CreateMap<CourseUpdateDto, Course>();
+            CreateMap<CourseUpdateDto, Course>()
+                .ForMember(dest => dest.CourseMedias, opt => opt.Ignore());
+
             CreateMap<Course, CourseUpdateDto>();
 
+            // Edit With Images DTO 
+            CreateMap<Course, CourseEditWithImagesDto>()
+           .ForMember(dest => dest.ExistingImages, opt => opt.MapFrom(src => src.CourseMedias.Select(cm => cm.Media)))
+           .ForMember(dest => dest.NewImages, opt => opt.Ignore()); // Ignoriere NewImages, da diese vom Benutzer hochgeladen werden
 
+            CreateMap<Media, CourseImageDto>()
+                .ForMember(dest => dest.MediaId, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.Url, opt => opt.MapFrom(src => src.Url))
+                .ForMember(dest => dest.ToDelete, opt => opt.Ignore());
         }
     }
 }

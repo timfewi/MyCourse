@@ -11,6 +11,10 @@ using MyCourse.Domain.Entities;
 using MyCourse.Domain.Extensions;
 using MyCourse.Domain.Validation.EntityValidations;
 using System.Reflection;
+using Moq;
+using MyCourse.Domain.Data.Interfaces.Repositories;
+using MyCourse.Domain.Data.Repositories.CourseRepositories;
+using MyCourse.Domain.Data.Repositories.MediaRepositories;
 
 public abstract class TestBase : IDisposable
 {
@@ -57,8 +61,18 @@ public abstract class TestBase : IDisposable
 
     protected virtual void ConfigureServices(IServiceCollection services)
     {
-        // Kann von abgeleiteten Klassen überschrieben werden.
+        var mockEnv = new Mock<IWebHostEnvironment>();
+        mockEnv.Setup(m => m.WebRootPath).Returns(Path.Combine(Path.GetTempPath(), "wwwroot_test"));
+
+        mockEnv.Setup(m => m.EnvironmentName).Returns("Development");
+        mockEnv.Setup(m => m.ContentRootPath).Returns(Directory.GetCurrentDirectory());
+
+        Directory.CreateDirectory(mockEnv.Object.WebRootPath);
+
+        services.AddSingleton<IWebHostEnvironment>(mockEnv.Object);
+
     }
+
 
     private void SeedDatabase()
     {

@@ -98,37 +98,5 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-    <script src="~/js/course/course-create.js"></script>
-    <style>
-        /* Styling für die Dateiliste */
-        #fileList ul {
-            list-style-type: none;
-            padding-left: 0;
-        }
-
-        #fileList li {
-            background: #f8f9fa;
-            margin-bottom: 5px;
-            padding: 10px;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            cursor: pointer;
-        }
-
-            #fileList li span {
-                flex: 1;
-                margin-right: 10px;
-            }
-
-            #fileList li button {
-                margin-left: 10px;
-            }
-        /* Tooltip-Styling */
-        #previewTooltip img {
-            max-width: 200px;
-            height: auto;
-        }
-    </style>
+    <script src="~/js/course/course-create.js" defer></script>
 }

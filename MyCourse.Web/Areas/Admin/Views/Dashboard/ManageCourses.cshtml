@@ -101,12 +101,6 @@
                     </tr>
                 }
             }
-            else
-            {
-                <tr>
-                    <td colspan="10" class="text-center">Es sind derzeit keine Kurse verfügbar.</td>
-                </tr>
-            }
         </tbody>
     </table>
 </div>
@@ -118,11 +112,15 @@
         $(document).ready(function () {
             $('#coursesTable').DataTable({
                 "language": {
-                    "url": "//cdn.datatables.net/plug-ins/2.1.8/i18n/de-DE.json"
+                    "url": "//cdn.datatables.net/plug-ins/2.1.8/i18n/de-DE.json",
+                    "emptyTable": "Es sind derzeit keine Kurse verfügbar."
                 },
                 "columnDefs": [
                     { "orderable": false, "targets": [8, 9] }
-                ]
+                ],
+                "paging": true,
+                "searching": true,
+                "info": true
             });
         });
     </script>

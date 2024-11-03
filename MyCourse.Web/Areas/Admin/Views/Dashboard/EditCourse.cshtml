@@ -1,0 +1,194 @@
+﻿@model MyCourse.Web.Areas.Admin.Models.Dashboard.CourseEditViewModel
+
+@{
+    ViewData["Title"] = "Kurs bearbeiten";
+}
+
+<h2 class="mb-4"><i class="fas fa-edit"></i> Kurs bearbeiten</h2>
+
+<form asp-action="EditCourse" method="post" enctype="multipart/form-data">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+
+    <!-- Titel -->
+    <div class="mb-3">
+        <label asp-for="Title" class="form-label">Titel</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="fas fa-heading"></i></span>
+            <input asp-for="Title" class="form-control" placeholder="Titel eingeben" />
+        </div>
+        <span asp-validation-for="Title" class="text-danger"></span>
+    </div>
+
+    <!-- Beschreibung -->
+    <div class="mb-3">
+        <label asp-for="Description" class="form-label">Beschreibung</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="fas fa-align-left"></i></span>
+            <textarea asp-for="Description" class="form-control" rows="5" placeholder="Beschreibung eingeben"></textarea>
+        </div>
+        <span asp-validation-for="Description" class="text-danger"></span>
+    </div>
+
+    <!-- Kursdatum -->
+    <div class="mb-3">
+        <label asp-for="CourseDate" class="form-label">Kursdatum</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+            <input asp-for="CourseDate" type="text" class="form-control flatpickr" placeholder="TT.MM.JJJJ" />
+        </div>
+        <span asp-validation-for="CourseDate" class="text-danger"></span>
+    </div>
+
+    <!-- Kursdauer -->
+    <div class="mb-3">
+        <label class="form-label">Kursdauer</label>
+        <div class="row">
+            <div class="col">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-hourglass-start"></i></span>
+                    <input type="number" asp-for="CourseDurationHours" class="form-control" placeholder="Stunden" min="0" />
+                </div>
+                <span asp-validation-for="CourseDurationHours" class="text-danger"></span>
+            </div>
+            <div class="col">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-hourglass-end"></i></span>
+                    <input type="number" asp-for="CourseDurationMinutes" class="form-control" placeholder="Minuten" min="0" max="59" />
+                </div>
+                <span asp-validation-for="CourseDurationMinutes" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Maximale Teilnehmerzahl -->
+    <div class="mb-3">
+        <label asp-for="MaxParticipants" class="form-label">Maximale Teilnehmerzahl</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="fas fa-users"></i></span>
+            <input asp-for="MaxParticipants" type="number" class="form-control" min="1" max="1000" placeholder="Anzahl eingeben" />
+        </div>
+        <span asp-validation-for="MaxParticipants" class="text-danger"></span>
+    </div>
+
+    <!-- Standort -->
+    <div class="mb-3">
+        <label asp-for="Location" class="form-label">Standort</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
+            <input asp-for="Location" class="form-control" placeholder="Standort eingeben" />
+        </div>
+        <span asp-validation-for="Location" class="text-danger"></span>
+    </div>
+
+    <!-- Preis -->
+    <div class="mb-3">
+        <label asp-for="Price" class="form-label">Preis (€)</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="fas fa-euro-sign"></i></span>
+            <input asp-for="Price" type="number" step="0.01" class="form-control" min="0" placeholder="Preis eingeben" />
+        </div>
+        <span asp-validation-for="Price" class="text-danger"></span>
+    </div>
+
+    <!-- Aktivieren Switch -->
+    <div class="form-check form-switch mb-4">
+        <input asp-for="IsActive" class="form-check-input" type="checkbox" id="IsActiveSwitch">
+        <label class="form-check-label" for="IsActiveSwitch">Kurs aktivieren</label>
+    </div>
+
+    <!-- Bestehende Bilder anzeigen mit Löschoption -->
+    <div class="mb-4">
+        <label class="form-label">Bestehende Bilder</label>
+        <div class="row">
+            @for (int i = 0; i < Model.ExistingImages.Count; i++)
+            {
+                <div class="col-md-3 mb-3">
+                    <div class="card">
+                        <img src="@Model.ExistingImages[i].Url" class="card-img-top img-thumbnail" alt="Kursbild" style="height: 100px; object-fit: cover; cursor: pointer;" onclick="showImagePreview('@Model.ExistingImages[i].Url')" />
+                        <div class="card-body text-center">
+                            <div class="form-check form-switch d-flex justify-content-center align-items-center">
+                                <!-- Verwendung von Html.IdFor zur Generierung der ID -->
+                                <input type="checkbox" asp-for="ExistingImages[@i].ToDelete" class="form-check-input" id="@Html.IdFor(m => m.ExistingImages[i].ToDelete)" />
+                                <label class="form-check-label ms-2" for="@Html.IdFor(m => m.ExistingImages[i].ToDelete)">Bild löschen</label>
+                                <input type="hidden" asp-for="ExistingImages[@i].MediaId" />
+                                <input type="hidden" asp-for="ExistingImages[@i].Url" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+
+
+    <!-- Neue Bilder hinzufügen (optional) -->
+    <div class="mb-4">
+        <label asp-for="NewImages" class="form-label">Neue Bilder hinzufügen</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="fas fa-upload"></i></span>
+            <input asp-for="NewImages" type="file" class="form-control" accept="image/*" multiple id="NewImages" />
+        </div>
+        <small class="form-text text-muted">Du kannst mehrere Bilder gleichzeitig hochladen.</small>
+        <span asp-validation-for="NewImages" class="text-danger"></span>
+    </div>
+    <!-- Bereich für die Dateiliste -->
+    <div id="fileList" class="mb-3"></div>
+
+
+    <button type="submit" class="btn btn-primary">
+        <i class="fas fa-save"></i> Speichern
+    </button>
+    <a href="@Url.Action("ManageCourses", "Dashboard", new { area = "Admin" })" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Zurück
+    </a>
+</form>
+
+<!-- Bildvorschau Modal -->
+<div class="modal fade" id="imagePreviewModal" tabindex="-1" aria-labelledby="imagePreviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="imagePreviewModalLabel">Bildvorschau</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img src="" alt="Bildvorschau" class="modal-img" id="previewImage">
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Begrenzen der maximalen Breite und Höhe des Bildes in der Modal */
+    .modal-img {
+        max-width: 100%; /* Passt die Breite des Bildes an die Modal-Breite an */
+        max-height: 500px; /* Begrenzung der maximalen Höhe des Bildes */
+        object-fit: contain; /* Stellt sicher, dass das gesamte Bild sichtbar bleibt */
+    }
+
+    /* Optional: Hinzufügen eines Hintergrundes oder Schatten für bessere Sichtbarkeit */
+    .modal-body {
+        background-color: #f8f9fa;
+    }
+</style>
+
+
+@section Scripts{
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function showImagePreview(imageUrl) {
+            console.log("showImagePreview aufgerufen mit URL:", imageUrl); // Debugging
+            const previewImage = document.getElementById('previewImage');
+            previewImage.src = imageUrl;
+
+            const imagePreviewModal = new bootstrap.Modal(document.getElementById('imagePreviewModal'), {
+                keyboard: true
+            });
+            imagePreviewModal.show();
+        }
+    </script>
+    <script src="~/js/course/course-edit.js"></script>
+
+}

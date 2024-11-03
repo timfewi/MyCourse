@@ -24,6 +24,7 @@ namespace MyCourse.Tests.UnitTests.Domain.Services
     {
         private readonly Mock<ICourseRepository> _mockCourseRepository;
         private readonly Mock<IApplicationRepository> _mockApplicationRepository;
+        private readonly Mock<IMediaRepository> _mockMediaRepository;
         private readonly Mock<IMapper> _mockMapper;
         private readonly Mock<IValidator<CourseCreateDto>> _mockCreateDtoValidator;
         private readonly Mock<IValidator<ApplicationRegistrationDto>> _mockRegistrationDtoValidator;
@@ -34,6 +35,7 @@ namespace MyCourse.Tests.UnitTests.Domain.Services
             // Mock objects
             _mockCourseRepository = new Mock<ICourseRepository>();
             _mockApplicationRepository = new Mock<IApplicationRepository>();
+            _mockMediaRepository = new Mock<IMediaRepository>();
             _mockMapper = new Mock<IMapper>();
             _mockCreateDtoValidator = new Mock<IValidator<CourseCreateDto>>();
             _mockRegistrationDtoValidator = new Mock<IValidator<ApplicationRegistrationDto>>();
@@ -50,6 +52,7 @@ namespace MyCourse.Tests.UnitTests.Domain.Services
             _courseService = new CourseService(
                 _mockCourseRepository.Object,
                 _mockApplicationRepository.Object,
+                _mockMediaRepository.Object,
                 _mockMapper.Object,
                 _serviceProvider.GetRequiredService<ILogger<CourseService>>(),
                 _mockCreateDtoValidator.Object,

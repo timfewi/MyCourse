@@ -393,5 +393,115 @@ namespace MyCourse.Web.Areas.Admin.Controllers
 
             return RedirectToAction("ManageCourses");
         }
+
+        [HttpGet]
+        public async Task<IActionResult> EditCourse(int id)
+        {
+            if (id <= 0)
+            {
+                _logger.LogWarning("Ungültige Kurs-ID {CourseId} für Bearbeitungsanfrage.", id);
+                TempData["ErrorMessage"] = "Ungültige Kurs-ID.";
+                return RedirectToAction("ManageCourses");
+            }
+
+            try
+            {
+
+                var courseDto = await _courseService.GetCourseEditDetailsWithImagesAsync(id);
+                if (courseDto == null)
+                {
+                    TempData["ErrorMessage"] = "Der angeforderte Kurs wurde nicht gefunden.";
+                    return RedirectToAction("ManageCourses");
+                }
+
+                var viewModel = new CourseEditViewModel
+                {
+                    Id = courseDto.CourseId,
+                    Title = courseDto.Title,
+                    Description = courseDto.Description,
+                    CourseDate = courseDto.CourseDate,
+                    CourseDurationHours = courseDto.CourseDuration.Hours,
+                    CourseDurationMinutes = courseDto.CourseDuration.Minutes,
+                    MaxParticipants = courseDto.MaxParticipants,
+                    Location = courseDto.Location,
+                    Price = courseDto.Price,
+                    IsActive = courseDto.IsActive,
+                    ExistingImages = courseDto.ExistingImages.Select(ei => new ExistingImageViewModel
+                    {
+                        MediaId = ei.MediaId,
+                        Url = ei.Url,
+                        ToDelete = false
+                    }).ToList(),
+                    NewImages = new List<IFormFile>()
+                };
+
+                return View(viewModel);
+            }
+            catch (CourseExceptions.NotFoundException)
+            {
+                TempData["ErrorMessage"] = "Der angeforderte Kurs wurde nicht gefunden.";
+                return RedirectToAction("ManageCourses");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while loading course details for EditCourse.");
+                TempData["ErrorMessage"] = "Es ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.";
+                return RedirectToAction("ManageCourses");
+            }
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditCourse(CourseEditViewModel viewModel)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(viewModel);
+            }
+
+            var courseEditDto = new CourseEditWithImagesDto
+            {
+                CourseId = viewModel.Id,
+                Title = viewModel.Title,
+                Description = viewModel.Description,
+                CourseDate = viewModel.CourseDate,
+                CourseDuration = new TimeSpan(viewModel.CourseDurationHours, viewModel.CourseDurationMinutes, 0),
+                MaxParticipants = viewModel.MaxParticipants,
+                Location = viewModel.Location,
+                Price = viewModel.Price,
+                IsActive = viewModel.IsActive,
+                ExistingImages = viewModel.ExistingImages.Select(ei => new CourseImageDto
+                {
+                    MediaId = ei.MediaId,
+                    Url = ei.Url,
+                    ToDelete = ei.ToDelete
+                }).ToList(),
+                NewImages = viewModel.NewImages!
+            };
+
+            try
+            {
+                await _courseService.UpdateCourseWithImagesAsync(courseEditDto);
+
+                TempData["SuccessMessage"] = "Der Kurs wurde erfolgreich aktualisiert.";
+                _logger.LogInformation("Course with ID {CourseId} updated successfully.", viewModel.Id);
+            }
+            catch (CourseExceptions.NotFoundException)
+            {
+                _logger.LogWarning("Course with ID {CourseId} not found during update.", viewModel.Id);
+                TempData["ErrorMessage"] = "Der angeforderte Kurs wurde nicht gefunden.";
+                return RedirectToAction("ManageCourses");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while updating course with ID {CourseId}.", viewModel.Id);
+                TempData["ErrorMessage"] = "Es ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.";
+                return RedirectToAction("ManageCourses");
+            }
+
+            return RedirectToAction("ManageCourses");
+        }
+
     }
 }

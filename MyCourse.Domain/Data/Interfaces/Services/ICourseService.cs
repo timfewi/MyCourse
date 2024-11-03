@@ -13,8 +13,10 @@ namespace MyCourse.Domain.Data.Interfaces.Services
         Task<IEnumerable<CourseListDto>> GetAllCoursesAsync();
         Task<IEnumerable<CourseListDto>> GetAllActiveCoursesAsync();
         Task<CourseDetailDto> GetCourseByIdAsync(int courseId);
+        Task<CourseEditWithImagesDto> GetCourseEditDetailsWithImagesAsync(int courseId);
         Task<int> CreateCourseAsync(CourseCreateDto courseDto);
         Task UpdateCourseAsync(CourseUpdateDto courseDto);
+        Task UpdateCourseWithImagesAsync(CourseEditWithImagesDto courseDto);
         Task DeleteCourseAsync(int courseId);
         Task ToggleCourseStatusAsync(int courseId);
 

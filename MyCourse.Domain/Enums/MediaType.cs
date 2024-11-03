@@ -9,6 +9,8 @@ namespace MyCourse.Domain.Enums
     public enum MediaType
     {
         Image,
+        DefaultImage,
+        HoverImage,
         Video,
         Audio,
     }

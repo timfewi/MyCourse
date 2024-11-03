@@ -51,3 +51,33 @@ body {
 .hover-image {
     transition: opacity 0.3s ease-in-out;
 }
+
+#fileList ul {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+#fileList li {
+    background: #f8f9fa;
+    margin-bottom: 5px;
+    padding: 10px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+}
+
+    #fileList li span {
+        flex: 1;
+        margin-right: 10px;
+    }
+
+    #fileList li button {
+        margin-left: 10px;
+    }
+/* Tooltip-Styling */
+#previewTooltip img {
+    max-width: 200px;
+    height: auto;
+}
