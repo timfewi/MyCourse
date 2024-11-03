@@ -19,21 +19,24 @@
       "destination": "wwwroot/lib/tempus-dominus/"
     },
     {
-      "provider": "cdnjs",
       "library": "luxon@3.5.0",
       "destination": "wwwroot/lib/luxon/"
+    },
+    {
+      "library": "popper.js@2.11.8",
+      "destination": "wwwroot/lib/popper.js/"
+    },
+    {
+      "library": "flatpickr@4.6.13",
+      "destination": "wwwroot/lib/flatpickr/"
+    },
+    {
+      "library": "datatable@2.0.2",
+      "destination": "wwwroot/lib/datatable/"
+    },
+    {
+      "library": "datatables@1.10.21",
+      "destination": "wwwroot/lib/datatables/"
     }
-  ,
-{
-  "provider": "cdnjs",
-  "library": "popper.js@2.11.8",
-  "destination": "wwwroot/lib/popper.js/"
-}
-,
-{
-  "provider": "cdnjs",
-  "library": "flatpickr@4.6.13",
-  "destination": "wwwroot/lib/flatpickr/"
-}
-]
+  ]
 }

@@ -33,6 +33,9 @@ namespace MyCourse.Web.Areas.Admin.Models.Dashboard
         [Range(0, double.MaxValue, ErrorMessage = "Preis muss positiv sein.")]
         public decimal Price { get; set; }
 
+        [Display(Name = "Bilder hochladen")]
+        public List<IFormFile> Images { get; set; } = new List<IFormFile>();
+
         public bool IsActive { get; set; }
     }
 }

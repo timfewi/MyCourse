@@ -24,7 +24,10 @@
                 {
                     <div class="col-md-4 mb-4">
                         <div class="card h-100">
-                            <img src="/images/placeholder.png" class="card-img-top" alt="@course.Title">
+                            <img src="@course.DefaultImageUrl"
+                                 data-hover="@course.HoverImageUrl"
+                                 class="card-img-top hover-image"
+                                 alt="@course.Title">
                             <div class="card-body d-flex flex-column">
                                 <h5 class="card-title">@course.Title</h5>
                                 <p class="card-text">
@@ -41,22 +44,6 @@
                                     <a href="@Url.Action("Details", "Course", new { id = course.Id })" class="btn btn-primary me-2">Details</a>
                                     <a href="@Url.Action("Register", "Course", new { id = course.Id })" class="btn btn-success">Anmelden</a>
                                 </div>
-                                @*<div class="mt-auto">
-            <button type="button" class="btn btn-primary me-2"
-                    data-bs-toggle="modal"
-                    data-bs-target="#detailsModal"
-                    data-course-id="@course.Id"
-                    data-details-url="@Url.Action("Details", "Course", new { id = course.Id })">
-                Details
-            </button>
-            <button type="button" class="btn btn-success"
-                    data-bs-toggle="modal"
-                    data-bs-target="#registerModal"
-                    data-course-id="@course.Id"
-                    data-register-url="@Url.Action("Register", "Course", new { id = course.Id })">
-                Anmelden
-            </button>
-        </div>*@
                             </div>
                         </div>
                     </div>
@@ -71,6 +58,7 @@
         </div>
     </div>
 </section>
+
 
 <!-- Features/Benefits Section -->
 <section class="bg-light py-5">
@@ -92,26 +80,3 @@
         </div>
     </div>
 </section>
-
-<!-- Course Details Modal -->
-<!--<div class="modal fade" id="detailsModal" tabindex="-1" aria-labelledby="detailsModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">-->
-            <!-- Inhalte werden per AJAX geladen -->
-        <!--</div>
-    </div>
-</div>-->
-
-<!-- Course Register Modal -->
-<!--<div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">-->
-            <!-- Inhalte werden per AJAX geladen -->
-        <!--</div>
-    </div>
-</div>-->
-
-
-@section Scripts{
-    @*<script src="~/js/course.js" defer></script>*@
-}

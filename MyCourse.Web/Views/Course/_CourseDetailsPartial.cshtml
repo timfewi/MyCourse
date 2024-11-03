@@ -8,17 +8,33 @@
 </div>
 <div class="modal-body">
     <!-- Bildbereich -->
-    @* Füge ein Bild hinzu, wenn verfügbar *@
-    @if (!string.IsNullOrEmpty(Model.ImageUrl))
+    @if (Model.ImageUrls != null && Model.ImageUrls.Count > 0)
     {
-        <div class="text-center mb-4">
-            <img src="@Model.ImageUrl" class="img-fluid rounded" alt="@Model.Title">
+        <!-- Bootstrap Carousel -->
+        <div id="courseCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
+            <div class="carousel-inner">
+                @for (int i = 0; i < Model.ImageUrls.Count; i++)
+                {
+                    var imageUrl = Model.ImageUrls[i];
+                    <div class="carousel-item @(i == 0 ? "active" : "")">
+                        <img src="@imageUrl" class="d-block w-100 rounded" alt="@Model.Title - Bild @(i + 1)">
+                    </div>
+                }
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#courseCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Vorherige</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#courseCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Nächste</span>
+            </button>
         </div>
     }
     else
     {
         <!-- Platzhalterbild -->
-        <div class="text-center mb-4">
+        <div class="mb-4">
             <img src="~/images/placeholder.png" class="img-fluid rounded" alt="Platzhalterbild">
         </div>
     }

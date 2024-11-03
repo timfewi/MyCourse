@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="~/lib/flatpickr/flatpickr.min.css" />
     <link rel="stylesheet" href="~/lib/fontawesome-iconpicker/css/fontawesome-iconpicker.min.css" />
     <link rel="stylesheet" href="~/lib/toastr.js/toastr.min.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.1.8/css/dataTables.dataTables.css" />
     <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/MyCourse.Web.styles.css" asp-append-version="true" />
 </head>
@@ -21,40 +22,65 @@
     @* Bedingte Anzeige der Sidebar *@
     @if (User.Identity != null && User.Identity.IsAuthenticated && User.IsInRole("ADMIN"))
     {
-        <div class="d-flex" id="wrapper">
+        <div id="wrapper">
             <!-- Sidebar -->
-            <nav id="sidebar" class="bg-dark border-right">
+            <nav id="sidebar">
                 <div class="sidebar-heading text-white">Admin Panel</div>
                 <div class="list-group list-group-flush">
                     <a href="@Url.Action("Index", "Dashboard", new { area = "Admin" })" class="list-group-item list-group-item-action bg-dark text-white">
-                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                        <i class="fas fa-tachometer-alt me-2"></i> Dashboard
                     </a>
                     <a href="@Url.Action("CreateCourse", "Dashboard", new { area = "Admin" })" class="list-group-item list-group-item-action bg-dark text-white">
-                        <i class="fas fa-plus-circle"></i> Kurs erstellen
+                        <i class="fas fa-plus-circle me-2"></i> Kurs erstellen
                     </a>
-                    <a href="@Url.Action("ListCourses", "Dashboard", new { area = "Admin" })" class="list-group-item list-group-item-action bg-dark text-white">
-                        <i class="fas fa-list"></i> Kurse verwalten
+                    <a href="@Url.Action("ManageCourses", "Dashboard", new { area = "Admin" })" class="list-group-item list-group-item-action bg-dark text-white">
+                        <i class="fas fa-list me-2"></i> Kurse verwalten
                     </a>
                     <!-- Weitere Admin-Navigationselemente hier hinzufügen -->
                     <form id="logout-form" asp-area="Admin" asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
                         @Html.AntiForgeryToken()
                         <button type="submit" class="list-group-item list-group-item-action bg-dark text-white border-0" style="cursor: pointer;">
-                            <i class="fas fa-sign-out-alt"></i> Logout
+                            <i class="fas fa-sign-out-alt me-2"></i> Logout
                         </button>
                     </form>
-
                 </div>
             </nav>
             <!-- /#sidebar -->
             <!-- Page Content -->
-            <div id="page-content-wrapper" class="w-100">
+            <div id="page-content-wrapper">
+                <!-- Navbar -->
                 <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
-                    <a href="/">Zurück zur Startseite</a>
+                    <div class="container-fluid">
+                        <button class="btn btn-primary" id="menu-toggle"><i class="fas fa-bars"></i></button>
+                        <a href="/" class="navbar-brand ms-3">Zurück zur Startseite</a>
+                    </div>
                 </nav>
-
+                <!-- /Navbar -->
+                <!-- Main Content -->
                 <div class="container-fluid mt-4">
                     @RenderBody()
                 </div>
+                <!-- /Main Content -->
+                <!-- Footer -->
+                <footer class="footer border-top mt-auto">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-md-6">
+                                &copy; 2024 - MyCourse.Admin
+                            </div>
+                            <div class="col-md-6 text-md-end">
+                                <a href="/terms" class="text-muted me-3">Nutzungsbedingungen</a>
+                                <a href="/privacy" class="text-muted">Datenschutz</a>
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-12 text-center">
+                                <small class="text-muted">Kontakt: admin@mycourse.de | Telefon: +49 123 456789</small>
+                            </div>
+                        </div>
+                    </div>
+                </footer>
+                <!-- /Footer -->
             </div>
             <!-- /#page-content-wrapper -->
         </div>
@@ -81,6 +107,7 @@
     <script src="~/lib/flatpickr/flatpickr.min.js"></script>
     <script src="~/lib/toastr.js/toastr.min.js"></script>
     <script src="~/lib/font-awesome/js/all.min.js"></script>
+    <script src="https://cdn.datatables.net/2.1.8/js/dataTables.js"></script>
     <script src="~/lib/fontawesome-iconpicker/js/fontawesome-iconpicker.min.js"></script>
     <script src="~/js/admin.js" asp-append-version="true"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
@@ -109,12 +136,11 @@
             @if (TempData["WarningMessage"] != null)
             {
                 <text>
-                    toastr.warning("@TempData["WarningMessage"]", "Warnung");
+            toastr.warning("@TempData["WarningMessage"]", "Warnung");
                 </text>
             }
         });
     </script>
-
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

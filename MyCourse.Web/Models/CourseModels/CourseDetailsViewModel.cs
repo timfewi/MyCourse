@@ -6,8 +6,7 @@ namespace MyCourse.Web.Models.CourseModels
     public class CourseDetailsViewModel
     {
         public int Id { get; set; }
-
-        public string? ImageUrl { get; set; }
+        public List<string> ImageUrls { get; set; } = new List<string>();
 
         [Display(Name = "Title")]
         public string Title { get; set; } = string.Empty;

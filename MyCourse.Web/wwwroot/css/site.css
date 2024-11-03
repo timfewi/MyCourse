@@ -48,3 +48,6 @@ body {
     align-items: center;
 }
 
+.hover-image {
+    transition: opacity 0.3s ease-in-out;
+}

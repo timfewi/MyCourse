@@ -63,10 +63,13 @@ namespace MyCourse.Domain.Services.CourseServices
                 _logger.LogError("Course with {courseId} not found", courseId);
                 throw CourseExceptions.NotFound(courseId);
             }
+
+            await _courseRepository.LoadCourseMediasAsync(course);
+
             return _mapper.Map<CourseDetailDto>(course);
         }
 
-        public async Task CreateCourseAsync(CourseCreateDto courseDto)
+        public async Task<int> CreateCourseAsync(CourseCreateDto courseDto)
         {
             var validationResult = await _createDtoValidator.ValidateAsync(courseDto);
 
@@ -87,6 +90,7 @@ namespace MyCourse.Domain.Services.CourseServices
             await _courseRepository.SaveChangesAsync();
             _logger.LogInformation("Course '{CourseName}' created successfully with ID {CourseId}.", course.Title, course.Id);
 
+            return course.Id;
         }
 
         public async Task UpdateCourseAsync(CourseUpdateDto courseDto)
@@ -114,6 +118,21 @@ namespace MyCourse.Domain.Services.CourseServices
             await _courseRepository.SaveChangesAsync();
         }
 
+        public async Task ToggleCourseStatusAsync(int courseId)
+        {
+            var course = await _courseRepository.GetCourseByIdAsync(courseId);
+            if (course == null)
+            {
+                _logger.LogWarning("Course with ID {CourseId} not found for status toggle.", courseId);
+                throw CourseExceptions.NotFound(courseId);
+            }
+
+            course.IsActive = !course.IsActive;
+            _courseRepository.UpdateCourse(course);
+            await _courseRepository.SaveChangesAsync();
+
+            _logger.LogInformation("Course '{CourseName}' status toggled to {Status}.", course.Title, course.IsActive ? "Aktiv" : "Inaktiv");
+        }
     }
 
 }

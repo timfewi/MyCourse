@@ -1,23 +1,10 @@
-## Application ##
-	- Exceptions 
-	- Dto Validation
-	- Mapping
-	- Repository
-	- Services
-	- Controllers
-	- Tests
- 
+## Dashboard ##
+-- EditCourse 
 
-## Media ##
-	- Exceptions 
-	- Dto Validation
-	- Mapping
-	- Repository	
-	- Services
-	- Controllers
-	- Tests
+## Tests für letztere Impls ##
+-- MediaTests
+-- CourseTests
 
 
-
-	Features 
-	- Logout
+## Exceptions ##
+-- MediaExceptions

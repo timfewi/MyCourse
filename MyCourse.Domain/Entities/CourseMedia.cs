@@ -13,8 +13,8 @@ namespace MyCourse.Domain.Entities
         public int MediaId { get; set; }
 
         [ForeignKey(nameof(CourseId))]
-        public Course Course { get; set; } = new();
+        public Course Course { get; set; } = default!;
         [ForeignKey(nameof(MediaId))]
-        public Media Media { get; set; } = new();
+        public Media Media { get; set; } = default!;
     }
 }

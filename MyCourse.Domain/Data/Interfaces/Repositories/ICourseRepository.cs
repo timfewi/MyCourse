@@ -17,5 +17,6 @@ namespace MyCourse.Domain.Data.Interfaces.Repositories
         void DeleteCourse(Course course);
         Task<IEnumerable<Course>> GetActiveCoursesAsync();
         Task<Course> GetCourseWithDetailsAsync(int courseId);
+        Task LoadCourseMediasAsync(Course course);
     }
 }

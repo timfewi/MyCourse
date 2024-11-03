@@ -6,18 +6,24 @@
 
 <h1 class="mt-4">Neuen Kurs erstellen</h1>
 
-<form asp-action="CreateCourse" method="post">
+<form asp-action="CreateCourse" method="post" enctype="multipart/form-data">
     @Html.AntiForgeryToken()
+
+    <!-- Titel -->
     <div class="form-group mb-3">
         <label asp-for="Title" class="form-label"></label>
         <input asp-for="Title" class="form-control" />
         <span asp-validation-for="Title" class="text-danger"></span>
     </div>
+
+    <!-- Beschreibung -->
     <div class="form-group mb-3">
         <label asp-for="Description" class="form-label"></label>
         <textarea asp-for="Description" class="form-control" rows="3"></textarea>
         <span asp-validation-for="Description" class="text-danger"></span>
     </div>
+
+    <!-- Kursdatum -->
     <div class="form-group mb-3">
         <label asp-for="CourseDate" class="form-label">Kursdatum</label>
         <div class="input-group date" id="courseDatePicker" data-target-input="nearest">
@@ -28,6 +34,8 @@
         </div>
         <span asp-validation-for="CourseDate" class="text-danger"></span>
     </div>
+
+    <!-- Kursdauer -->
     <div class="form-group mb-3">
         <label class="form-label">Kursdauer</label>
         <div class="row">
@@ -41,25 +49,45 @@
             </div>
         </div>
     </div>
+
+    <!-- Maximale Teilnehmer -->
     <div class="form-group mb-3">
         <label asp-for="MaxParticipants" class="form-label"></label>
         <input asp-for="MaxParticipants" type="number" class="form-control" min="1" max="1000" />
         <span asp-validation-for="MaxParticipants" class="text-danger"></span>
     </div>
+
+    <!-- Standort -->
     <div class="form-group mb-3">
         <label asp-for="Location" class="form-label"></label>
         <input asp-for="Location" class="form-control" />
         <span asp-validation-for="Location" class="text-danger"></span>
     </div>
+
+    <!-- Preis -->
     <div class="form-group mb-3">
         <label asp-for="Price" class="form-label"></label>
         <input asp-for="Price" type="number" step="0.01" class="form-control" min="0" />
         <span asp-validation-for="Price" class="text-danger"></span>
     </div>
+
+    <!-- Bilder hochladen -->
+    <div class="form-group mb-3">
+        <label asp-for="Images"></label>
+        <input asp-for="Images" type="file" class="form-control" multiple onchange="updateFileList()" id="Images" />
+        <span asp-validation-for="Images" class="text-danger"></span>
+    </div>
+
+    <!-- Bereich zur Anzeige der ausgewählten Dateien -->
+    <div id="fileList" class="mt-2"></div>
+
+    <!-- Aktiv -->
     <div class="form-check mb-3">
         <input asp-for="IsActive" class="form-check-input" />
         <label asp-for="IsActive" class="form-check-label"></label>
     </div>
+
+    <!-- Buttons -->
     <button type="submit" class="btn btn-primary">
         <i class="fas fa-save"></i> Speichern
     </button>
@@ -70,4 +98,37 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/course/course-create.js"></script>
+    <style>
+        /* Styling für die Dateiliste */
+        #fileList ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        #fileList li {
+            background: #f8f9fa;
+            margin-bottom: 5px;
+            padding: 10px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+        }
+
+            #fileList li span {
+                flex: 1;
+                margin-right: 10px;
+            }
+
+            #fileList li button {
+                margin-left: 10px;
+            }
+        /* Tooltip-Styling */
+        #previewTooltip img {
+            max-width: 200px;
+            height: auto;
+        }
+    </style>
 }

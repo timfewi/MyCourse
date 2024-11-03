@@ -19,12 +19,18 @@ namespace MyCourse.Domain.Data.Repositories.CourseRepositories
         }
         public async Task<IEnumerable<Course>> GetAllCoursesAsync()
         {
-            return await _dbSet.Include(c => c.Applications).ToListAsync();
+            return await _dbSet.Include(c => c.Applications)
+                .Include(c => c.CourseMedias)
+                .ThenInclude(cm => cm.Media)
+            .ToListAsync();
         }
 
         public async Task<IEnumerable<Course>> GetAllActiveCoursesAsync()
         {
-            var activeCourses = await _dbSet.Where(c => c.IsActive).ToListAsync();
+            var activeCourses = await _dbSet.Where(c => c.IsActive)
+            .Include(c => c.CourseMedias)
+                .ThenInclude(cm => cm.Media)
+            .ToListAsync();
             return activeCourses;
         }
 
@@ -32,6 +38,8 @@ namespace MyCourse.Domain.Data.Repositories.CourseRepositories
         {
             return await _dbSet
                 .Include(c => c.Applications)
+                .Include(c => c.CourseMedias)
+                    .ThenInclude(cm => cm.Media)
                 .FirstOrDefaultAsync(c => c.Id == courseId);
         }
 
@@ -69,5 +77,15 @@ namespace MyCourse.Domain.Data.Repositories.CourseRepositories
 
             return course;
         }
+
+        public async Task LoadCourseMediasAsync(Course course)
+        {
+            await _dbContext.Entry(course)
+                .Collection(c => c.CourseMedias)
+                .Query()
+                .Include(cm => cm.Media)
+                .LoadAsync();
+        }
+
     }
 }

@@ -282,7 +282,7 @@ namespace MyCourse.Tests.UnitTests.Domain.Services
                 .Returns(Task.CompletedTask);
 
             // Act 
-            await _courseService.CreateCourseAsync(courseCreateDto);
+            var courseId = await _courseService.CreateCourseAsync(courseCreateDto);
 
             // Assert
             _mockCreateDtoValidator.Verify(v => v.ValidateAsync(courseCreateDto, default), Times.Once);
@@ -322,7 +322,7 @@ namespace MyCourse.Tests.UnitTests.Domain.Services
                 .ReturnsAsync(validationResult);
 
             // Act
-            Func<Task> act = async () => await _courseService.CreateCourseAsync(courseCreateDto);
+            Func<Task<int>> act = async () => await _courseService.CreateCourseAsync(courseCreateDto);
 
             // Assert 
             var exception = await Assert.ThrowsAsync<ValidationException>(act);

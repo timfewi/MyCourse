@@ -36,7 +36,7 @@ namespace MyCourse.Web.Controllers
             var model = new CourseDetailsViewModel
             {
                 Id = id,
-                ImageUrl = null,
+                ImageUrls = course.ImageUrls,
                 Title = course.Title,
                 Description = course.Description,
                 CourseDate = course.CourseDate,
@@ -51,6 +51,7 @@ namespace MyCourse.Web.Controllers
             return PartialView("_CourseDetailsPartial", model);
         }
 
+        // GET: Course/Details
         [HttpGet]
         public async Task<IActionResult> Details(int id)
         {
@@ -63,7 +64,7 @@ namespace MyCourse.Web.Controllers
             var model = new CourseDetailsViewModel
             {
                 Id = id,
-                ImageUrl = null,
+                ImageUrls = course.ImageUrls,
                 Title = course.Title,
                 Description = course.Description,
                 CourseDate = course.CourseDate,
