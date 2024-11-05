@@ -3,7 +3,7 @@
 // Datei-Upload-Verwaltung
 const dataTransfer = new DataTransfer();
 const MAX_FILES = 10; // Maximale Anzahl der Dateien
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 5 MB
 
 function updateFileList() {
     const input = document.getElementById('Images');

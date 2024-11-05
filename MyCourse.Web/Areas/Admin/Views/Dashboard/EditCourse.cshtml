@@ -35,7 +35,7 @@
         <label asp-for="CourseDate" class="form-label">Kursdatum</label>
         <div class="input-group">
             <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
-            <input asp-for="CourseDate" type="text" class="form-control flatpickr" placeholder="TT.MM.JJJJ" />
+            <input asp-for="CourseDate" type="text" class="form-control flatpickr datetime-picker" placeholder="TT.MM.JJJJ HH:MM" />
         </div>
         <span asp-validation-for="CourseDate" class="text-danger"></span>
     </div>
@@ -177,18 +177,6 @@
 
 @section Scripts{
     <partial name="_ValidationScriptsPartial" />
-    <script>
-        function showImagePreview(imageUrl) {
-            console.log("showImagePreview aufgerufen mit URL:", imageUrl); // Debugging
-            const previewImage = document.getElementById('previewImage');
-            previewImage.src = imageUrl;
-
-            const imagePreviewModal = new bootstrap.Modal(document.getElementById('imagePreviewModal'), {
-                keyboard: true
-            });
-            imagePreviewModal.show();
-        }
-    </script>
     <script src="~/js/course/course-edit.js"></script>
 
 }

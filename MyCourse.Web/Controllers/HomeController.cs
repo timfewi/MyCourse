@@ -25,6 +25,21 @@ namespace MyCourse.Web.Controllers
         {
             var activeCourses = await _courseService.GetAllActiveCoursesAsync();
 
+            // Map CourseListDto zu CourseHomeViewModel
+            var activeCoursesHomeViewModel = activeCourses.Select(course => new CourseHomeViewModel
+            {
+                Id = course.Id,
+                Title = course.Title,
+                Description = course.Description.Length > 100 ? course.Description.Substring(0, 100) + "..." : course.Description,
+                CourseDate = course.CourseDate,
+                CourseDurationFormatted = $"{course.CourseDuration.Hours} Stunden {course.CourseDuration.Minutes} Minuten",
+                Location = course.Location,
+                Price = course.Price,
+                IsActive = course.IsActive,
+                DefaultImageUrl = course.DefaultImageUrl,
+                HoverImageUrl = course.HoverImageUrl
+            }).ToList();
+
             // Definiere die Features
             var features = new List<Feature>
             {
@@ -36,7 +51,7 @@ namespace MyCourse.Web.Controllers
 
             var viewModel = new HomeViewModel
             {
-                ActiveCourses = activeCourses,
+                ActiveCourses = activeCoursesHomeViewModel,
                 Features = features
             };
 

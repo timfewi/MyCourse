@@ -4,7 +4,7 @@ namespace MyCourse.Web.Models.HomeModels
 {
     public class HomeViewModel
     {
-        public IEnumerable<CourseListDto>? ActiveCourses { get; set; } 
+        public List<CourseHomeViewModel> ActiveCourses { get; set; } = new List<CourseHomeViewModel>();
         public IEnumerable<Feature>? Features { get; set; }
     }
 

@@ -16,6 +16,7 @@ namespace MyCourse.Web.Areas.Admin.Models.Dashboard
 
         [Required(ErrorMessage = "Das Kursdatum ist erforderlich.")]
         [DataType(DataType.Date)]
+        [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd HH:mm}", ApplyFormatInEditMode = true)]
         public DateTime CourseDate { get; set; }
 
         [Required(ErrorMessage = "Die Kursdauer in Stunden ist erforderlich.")]

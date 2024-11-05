@@ -2,7 +2,9 @@
 using Microsoft.AspNetCore.Mvc;
 using MyCourse.Domain.Data.Interfaces.Services;
 using MyCourse.Domain.DTOs.ApplicationDtos;
+using MyCourse.Domain.Exceptions.CourseExceptions.CourseEx;
 using MyCourse.Web.Models.CourseModels;
+using static MyCourse.Domain.Exceptions.CourseEx.CourseExceptions;
 
 namespace MyCourse.Web.Controllers
 {
@@ -192,5 +194,43 @@ namespace MyCourse.Web.Controllers
 
             return PartialView("_CourseRegisterPartial", model);
         }
+
+        // GET: Course/GetCourseImages/{id}
+        [HttpGet]
+        public async Task<IActionResult> GetCourseImages(int id)
+        {
+            if (id <= 0)
+            {
+                return BadRequest("Ungültige Kurs-ID");
+            }
+
+            try
+            {
+                var course = await _courseService.GetCourseByIdAsync(id);
+                if (course == null || !course.IsActive)
+                {
+                    return NotFound("Kurs nicht gefunden oder inaktiv.");
+                }
+
+                var images = course.ImageUrls.Select(img => new CourseImageViewModel
+                {
+                    ImageUrl = img,
+                    AltText = $"Bild von {course.Title} als Vorschaubild"
+                }).ToList();
+
+                return Json(images);
+            }
+            catch (CourseNotFoundException ex)
+            {
+                _logger.LogError(ex, "Kurs mit ID {CourseId} wurde nicht gefunden.", id);
+                return NotFound("Kurs nicht gefunden.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ein Fehler ist beim Abrufen der Kursbilder aufgetreten.");
+                return StatusCode(500, "Ein interner Serverfehler ist aufgetreten.");
+            }
+        }
+
     }
 }

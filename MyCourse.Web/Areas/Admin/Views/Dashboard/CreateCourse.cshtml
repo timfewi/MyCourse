@@ -26,8 +26,8 @@
     <!-- Kursdatum -->
     <div class="form-group mb-3">
         <label asp-for="CourseDate" class="form-label">Kursdatum</label>
-        <div class="input-group date" id="courseDatePicker" data-target-input="nearest">
-            <input asp-for="CourseDate" type="text" class="form-control" data-input />
+        <div class="input-group date flatpick" data-target-input="nearest">
+            <input asp-for="CourseDate" type="text" class="form-control flatpickr" data-input />
             <div class="input-group-append" data-toggle="flatpickr">
                 <div class="input-group-text"><i class="fas fa-calendar-alt"></i></div>
             </div>

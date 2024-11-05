@@ -28,13 +28,17 @@
         "hideMethod": "fadeOut"
     };
 
-    const courseDatePickerElement = document.querySelector('#courseDatePicker input');
-    if (courseDatePickerElement) {
-        flatpickr(courseDatePickerElement, {
-            dateFormat: "Y-m-d", // ISO 8601 Format für das Model Binding
+    // Universelle Flatpickr-Initialisierung für alle Inputs mit der Klasse 'flatpickr'
+    const flatpickrElements = document.querySelectorAll('.flatpickr');
+    flatpickrElements.forEach(function (element) {
+        flatpickr(element, {
+            enableTime: true, // Zeit auswählen erlauben
+            noCalendar: false, // Kalender anzeigen
+            dateFormat: "Y-m-d H:i", // ISO 8601 Format für das Model Binding inklusive Zeit
             altInput: true,
-            altFormat: "d.m.Y", // Anzeigeformat
+            altFormat: "d.m.Y H:i", // Anzeigeformat inklusive Zeit im 24-Stunden-Format
             allowInput: true,
+            time_24hr: true, // 24-Stunden-Format aktivieren
             locale: {
                 firstDayOfWeek: 1, // Montag als erster Tag der Woche
                 weekdays: {
@@ -47,5 +51,6 @@
                 }
             }
         });
-    }
+    });
+
 });

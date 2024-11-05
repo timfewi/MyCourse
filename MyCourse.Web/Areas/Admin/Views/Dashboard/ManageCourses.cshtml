@@ -55,13 +55,13 @@
                             @if (course.Description.Length > 100)
                             {
                                 @course.Description.Substring(0, 100)
-                                    }
+                            }
                             else
                             {
                                 @course.Description
                             }
                         </td>
-                        <td>@course.CourseDate.ToString("dd.MM.yyyy")</td>
+                        <td>@course.CourseDate.ToString("dd.MM.yyyy HH:mm")</td>
                         <td>@course.CourseDuration.Hours Stunden @course.CourseDuration.Minutes Minuten</td>
                         <td>@course.Location</td>
                         <td>@course.Price.ToString("C")</td>
