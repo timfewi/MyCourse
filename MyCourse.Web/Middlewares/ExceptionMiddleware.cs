@@ -1,9 +1,12 @@
 ﻿using FluentValidation;
 using MyCourse.Domain.Exceptions.ApplicationEx;
+using MyCourse.Domain.Exceptions.CourseEx;
 using MyCourse.Domain.Exceptions.CourseExceptions.CourseEx;
+using MyCourse.Domain.Exceptions.MediaEx;
 using MyCourse.Web.Models.ErrorModels;
 using System.Net;
 using System.Text.Json;
+using ApplicationException = MyCourse.Domain.Exceptions.ApplicationEx.ApplicationException;
 
 namespace MyCourse.Web.Middlewares
 {
@@ -24,11 +27,59 @@ namespace MyCourse.Web.Middlewares
             {
                 await next(context);
             }
+            catch (MediaException ex)
+            {
+                _logger.LogWarning(ex, "A media-related error occurred.");
+
+                context.Response.StatusCode = ex.ErrorCode switch
+                {
+                    MediaErrorCode.FileNotExists => (int)HttpStatusCode.NotFound,
+                    MediaErrorCode.FileEmpty => (int)HttpStatusCode.BadRequest,
+                    MediaErrorCode.ValidationFailed => (int)HttpStatusCode.BadRequest,
+                    MediaErrorCode.UnsupportedFileType => (int)HttpStatusCode.UnsupportedMediaType,
+                    MediaErrorCode.FileTooLarge => (int)HttpStatusCode.RequestEntityTooLarge,
+                    MediaErrorCode.UnauthorizedAccess => (int)HttpStatusCode.Unauthorized,
+                    MediaErrorCode.InvalidOperation => (int)HttpStatusCode.BadRequest,
+                    MediaErrorCode.MediaAlreadyExists => (int)HttpStatusCode.Conflict,
+                    MediaErrorCode.MediaNotLinkedToCourse => (int)HttpStatusCode.BadRequest,
+                    MediaErrorCode.SaveFailed => (int)HttpStatusCode.Conflict,
+                    _ => (int)HttpStatusCode.InternalServerError
+                };
+                context.Response.ContentType = "application/json";
+
+                var response = new ErrorResponse
+                {
+                    Error = ex.Message,
+                    Code = ex.ErrorCode.ToString(),
+                    Details = new
+                    {
+                        mediaId = ex.MediaId,
+                        additionalData = ex.AdditionalData
+                    }
+                };
+
+                var json = JsonSerializer.Serialize(response);
+                await context.Response.WriteAsync(json);
+            }
             catch (CourseException ex)
             {
                 _logger.LogWarning(ex, "A course-related error occurred.");
 
-                context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                context.Response.StatusCode = ex.ErrorCode switch
+                {
+                    CourseErrorCode.NotFound => (int)HttpStatusCode.NotFound,
+                    CourseErrorCode.CourseFull => (int)HttpStatusCode.Conflict,
+                    CourseErrorCode.InvalidOperation => (int)HttpStatusCode.BadRequest,
+                    CourseErrorCode.NotActive => (int)HttpStatusCode.BadRequest,
+                    CourseErrorCode.MaxParticipantsExceeded => (int)HttpStatusCode.BadRequest,
+                    CourseErrorCode.InvalidCourseDate => (int)HttpStatusCode.BadRequest,
+                    CourseErrorCode.DuplicateCourse => (int)HttpStatusCode.Conflict,
+                    CourseErrorCode.UnauthorizedAccess => (int)HttpStatusCode.Unauthorized,
+                    CourseErrorCode.SaveFailed => (int)HttpStatusCode.InternalServerError,
+                    CourseErrorCode.UpdateFailed => (int)HttpStatusCode.InternalServerError,
+                    _ => (int)HttpStatusCode.InternalServerError
+                };
+
                 context.Response.ContentType = "application/json";
 
                 var response = new ErrorResponse
@@ -46,16 +97,23 @@ namespace MyCourse.Web.Middlewares
 
                 await context.Response.WriteAsync(json);
             }
-            catch (Domain.Exceptions.ApplicationEx.ApplicationException ex)
+            catch (ApplicationException ex)
             {
-                // Behandlung von benutzerdefinierten ApplicationException
                 _logger.LogWarning(ex, "An application-related error occurred.");
 
                 context.Response.StatusCode = ex.ErrorCode switch
                 {
                     ApplicationErrorCode.NotFound => (int)HttpStatusCode.NotFound,
+                    ApplicationErrorCode.InvalidOperation => (int)HttpStatusCode.BadRequest,
+                    ApplicationErrorCode.DuplicateApplication => (int)HttpStatusCode.Conflict,
+                    ApplicationErrorCode.ApplicationAlreadyProcessed => (int)HttpStatusCode.BadRequest,
+                    ApplicationErrorCode.ApplicationClosed => (int)HttpStatusCode.BadRequest,
                     ApplicationErrorCode.Unauthorized => (int)HttpStatusCode.Unauthorized,
-                    _ => (int)HttpStatusCode.BadRequest
+                    ApplicationErrorCode.MaxApplicationsReached => (int)HttpStatusCode.BadRequest,
+                    ApplicationErrorCode.InvalidStatusTransition => (int)HttpStatusCode.BadRequest,
+                    ApplicationErrorCode.MissingRequiredFields => (int)HttpStatusCode.BadRequest,
+                    ApplicationErrorCode.SaveFailed => (int)HttpStatusCode.BadRequest,
+                    _ => (int)HttpStatusCode.InternalServerError
                 };
                 context.Response.ContentType = "application/json";
 

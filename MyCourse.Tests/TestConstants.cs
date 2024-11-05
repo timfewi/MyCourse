@@ -67,5 +67,6 @@ namespace MyCourse.Tests
         public const int InvalidCourseId = 0;
         public const int InvalidApplicationId = 0;
         public const int InvalidMediaId = 0;
+
     }
 }

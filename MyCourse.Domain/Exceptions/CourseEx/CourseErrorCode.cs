@@ -11,8 +11,13 @@ namespace MyCourse.Domain.Exceptions.CourseEx
         NotFound,
         CourseFull,
         InvalidOperation,
+        NotActive,
         MaxParticipantsExceeded,
-        InvalidCourseDate
+        InvalidCourseDate,
+        DuplicateCourse,
+        UnauthorizedAccess,
+        SaveFailed,
+        UpdateFailed,
     }
 
 }

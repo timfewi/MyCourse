@@ -11,12 +11,13 @@ using MyCourse.Domain.DTOs.ApplicationDtos;
 using MyCourse.Domain.DTOs.CourseDtos;
 using MyCourse.Domain.Entities;
 using MyCourse.Domain.Exceptions.CourseEx;
+using MyCourse.Domain.Exceptions.MediaEx;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Security.Cryptography.Xml;
-using System.Text;
 using System.Threading.Tasks;
+using static MyCourse.Domain.Exceptions.CourseEx.CourseExceptions;
 
 namespace MyCourse.Domain.Services.CourseServices
 {
@@ -30,7 +31,6 @@ namespace MyCourse.Domain.Services.CourseServices
         private readonly ILogger<CourseService> _logger;
         private readonly IValidator<CourseCreateDto> _createDtoValidator;
         private readonly IValidator<ApplicationRegistrationDto> _registrationDtoValidator;
-
 
         public CourseService(
             ICourseRepository courseRepository,
@@ -68,8 +68,8 @@ namespace MyCourse.Domain.Services.CourseServices
             var course = await _courseRepository.GetCourseByIdAsync(courseId);
             if (course == null)
             {
-                _logger.LogError("Course with {courseId} not found", courseId);
-                throw CourseExceptions.NotFound(courseId);
+                _logger.LogWarning("Course with ID {CourseId} not found.", courseId);
+                throw new CourseNotFoundException(courseId);
             }
 
             await _courseRepository.LoadCourseMediasAsync(course);
@@ -84,7 +84,7 @@ namespace MyCourse.Domain.Services.CourseServices
             if (!validationResult.IsValid)
             {
                 _logger.LogWarning("Validation failed for creating course: {Errors}",
-                       string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage)));
+                    string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage)));
                 throw new ValidationException(validationResult.Errors);
             }
 
@@ -92,13 +92,22 @@ namespace MyCourse.Domain.Services.CourseServices
             if (course == null)
             {
                 _logger.LogError("Mapping from CourseCreateDto to Course failed.");
-                throw new InvalidOperationException("Mapping from CourseCreateDto to Course failed.");
+                throw new InvalidCourseOperationException("Mapping from CourseCreateDto to Course failed.");
             }
-            await _courseRepository.AddCourseAsync(course);
-            await _courseRepository.SaveChangesAsync();
-            _logger.LogInformation("Course '{CourseName}' created successfully with ID {CourseId}.", course.Title, course.Id);
 
-            return course.Id;
+            try
+            {
+                await _courseRepository.AddCourseAsync(course);
+                await _courseRepository.SaveChangesAsync();
+                _logger.LogInformation("Course '{CourseName}' created successfully with ID {CourseId}.", course.Title, course.Id);
+
+                return course.Id;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while creating course.");
+                throw new CourseSaveException("An error occurred while saving the course.", course.Id, ex);
+            }
         }
 
         public async Task UpdateCourseAsync(CourseUpdateDto courseDto)
@@ -107,11 +116,22 @@ namespace MyCourse.Domain.Services.CourseServices
             if (course == null)
             {
                 _logger.LogWarning("Course with ID {CourseId} not found for update.", courseDto.Id);
-                throw CourseExceptions.NotFound(courseDto.Id);
+                throw new CourseNotFoundException(courseDto.Id);
             }
+
             _mapper.Map(courseDto, course);
             _courseRepository.UpdateCourse(course);
-            await _courseRepository.SaveChangesAsync();
+
+            try
+            {
+                await _courseRepository.SaveChangesAsync();
+                _logger.LogInformation("Course with ID {CourseId} updated successfully.", course.Id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while updating course with ID {CourseId}.", course.Id);
+                throw new CourseSaveException("An error occurred while updating the course.", course.Id, ex);
+            }
         }
 
         public async Task DeleteCourseAsync(int courseId)
@@ -120,10 +140,21 @@ namespace MyCourse.Domain.Services.CourseServices
             if (course == null)
             {
                 _logger.LogWarning("Course with ID {CourseId} not found for deletion.", courseId);
-                throw CourseExceptions.NotFound(courseId);
+                throw new CourseNotFoundException(courseId);
             }
+
             _courseRepository.DeleteCourse(course);
-            await _courseRepository.SaveChangesAsync();
+
+            try
+            {
+                await _courseRepository.SaveChangesAsync();
+                _logger.LogInformation("Course with ID {CourseId} deleted successfully.", courseId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while deleting course with ID {CourseId}.", courseId);
+                throw new CourseSaveException("An error occurred while deleting the course.", courseId, ex);
+            }
         }
 
         public async Task ToggleCourseStatusAsync(int courseId)
@@ -132,14 +163,22 @@ namespace MyCourse.Domain.Services.CourseServices
             if (course == null)
             {
                 _logger.LogWarning("Course with ID {CourseId} not found for status toggle.", courseId);
-                throw CourseExceptions.NotFound(courseId);
+                throw new CourseNotFoundException(courseId);
             }
 
             course.IsActive = !course.IsActive;
             _courseRepository.UpdateCourse(course);
-            await _courseRepository.SaveChangesAsync();
 
-            _logger.LogInformation("Course '{CourseName}' status toggled to {Status}.", course.Title, course.IsActive ? "Aktiv" : "Inaktiv");
+            try
+            {
+                await _courseRepository.SaveChangesAsync();
+                _logger.LogInformation("Course '{CourseName}' status toggled to {Status}.", course.Title, course.IsActive ? "Aktiv" : "Inaktiv");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while toggling status for course with ID {CourseId}.", courseId);
+                throw new CourseSaveException("An error occurred while toggling course status.", courseId, ex);
+            }
         }
 
         public async Task<CourseEditWithImagesDto> GetCourseEditDetailsWithImagesAsync(int courseId)
@@ -148,8 +187,9 @@ namespace MyCourse.Domain.Services.CourseServices
             if (course == null)
             {
                 _logger.LogWarning("Course with ID {CourseId} not found.", courseId);
-                throw CourseExceptions.NotFound(courseId);
+                throw new CourseNotFoundException(courseId);
             }
+
             await _courseRepository.LoadCourseMediasAsync(course);
 
             var dto = _mapper.Map<CourseEditWithImagesDto>(course);
@@ -170,11 +210,12 @@ namespace MyCourse.Domain.Services.CourseServices
             if (course == null)
             {
                 _logger.LogWarning("Course with ID {CourseId} not found for update.", courseDto.CourseId);
-                throw CourseExceptions.NotFound(courseDto.CourseId);
+                throw new CourseNotFoundException(courseDto.CourseId);
             }
 
             await _courseRepository.LoadCourseMediasAsync(course);
 
+            // Update course properties
             course.Title = courseDto.Title;
             course.Description = courseDto.Description;
             course.CourseDate = courseDto.CourseDate;
@@ -184,6 +225,7 @@ namespace MyCourse.Domain.Services.CourseServices
             course.Price = courseDto.Price;
             course.IsActive = courseDto.IsActive;
 
+            // Handle existing images
             if (courseDto.ExistingImages != null && courseDto.ExistingImages.Any())
             {
                 var imagesToDelete = courseDto.ExistingImages
@@ -200,44 +242,62 @@ namespace MyCourse.Domain.Services.CourseServices
 
                     foreach (var media in mediasToDelete)
                     {
-                        _mediaRepository.DeleteImage(media);
-                        var courseMedia = course.CourseMedias.First(cm => cm.MediaId == media.Id);
-                        _mediaRepository.RemoveCourseMedia(courseMedia);
+                        try
+                        {
+                            _mediaRepository.DeleteImage(media);
+                            var courseMedia = course.CourseMedias.First(cm => cm.MediaId == media.Id);
+                            _mediaRepository.RemoveCourseMedia(courseMedia);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Error deleting media with ID {MediaId} during course update.", media.Id);
+                            throw new CourseUpdateException("An error occurred while deleting media during course update.", course.Id, ex);
+                        }
                     }
                 }
             }
 
+            // Handle new images
             if (courseDto.NewImages != null && courseDto.NewImages.Any())
             {
                 foreach (var image in courseDto.NewImages)
                 {
                     if (image != null && image.Length > 0)
                     {
-                        var entity = await _mediaRepository.SaveImageAsync(image, course.Id);
-                        var imageUrl = entity.Url;
-
-                        var media = new Media
+                        try
                         {
-                            Url = imageUrl,
-                            FileName = Path.GetFileName(image.FileName),
-                            MediaType = Domain.Enums.MediaType.Image,
-                            ContentType = image.ContentType,
-                            Description = string.Empty,
-                            FileSize = image.Length
-                        };
+                            // Save image and get the media entity
+                            var media = await _mediaRepository.SaveImageAsync(image, course.Id);
 
-                        await _mediaRepository.AddAsync(media);
-                        await _courseRepository.SaveChangesAsync();
-
-                        await _mediaRepository.AddCourseMediaAsync(course.Id, media.Id);
+                            // Add media to course
+                            await _mediaRepository.AddCourseMediaAsync(course.Id, media.Id);
+                        }
+                        catch (MediaException ex)
+                        {
+                            _logger.LogError(ex, "MediaException occurred while adding new image to course with ID {CourseId}.", course.Id);
+                            throw; // Weiterwerfen, um in der höheren Ebene behandelt zu werden
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Unexpected error occurred while adding new image to course with ID {CourseId}.", course.Id);
+                            throw new CourseUpdateException("An error occurred while adding new images to the course.", course.Id, ex);
+                        }
                     }
                 }
             }
-            _courseRepository.UpdateCourse(course);
-            await _courseRepository.SaveChangesAsync();
 
-            _logger.LogInformation("Course with ID {CourseId} updated successfully.", course.Id);
+            _courseRepository.UpdateCourse(course);
+
+            try
+            {
+                await _courseRepository.SaveChangesAsync();
+                _logger.LogInformation("Course with ID {CourseId} updated successfully.", course.Id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while saving course with ID {CourseId}.", course.Id);
+                throw new CourseSaveException("An error occurred while saving the course.", course.Id, ex);
+            }
         }
     }
-
 }

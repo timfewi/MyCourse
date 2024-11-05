@@ -6,9 +6,11 @@ using MyCourse.Domain.Data.Interfaces.Services;
 using MyCourse.Domain.DTOs.CourseDtos;
 using MyCourse.Domain.DTOs.MediaDtos;
 using MyCourse.Domain.Exceptions.CourseEx;
+using MyCourse.Domain.Exceptions.MediaEx;
 using MyCourse.Web.Areas.Admin.Models.Dashboard;
 using System.Net;
 using System.Net.Mail;
+using static MyCourse.Domain.Exceptions.CourseEx.CourseExceptions;
 
 namespace MyCourse.Web.Areas.Admin.Controllers
 {
@@ -182,9 +184,14 @@ namespace MyCourse.Web.Areas.Admin.Controllers
                                 ModelState.AddModelError("Images", $"Die Datei {formFile.FileName} ist zu groß oder leer.");
                             }
                         }
-                        catch (Exception ex)
+                        catch (MediaException ex)
                         {
                             _logger.LogError(ex, "Fehler beim Verarbeiten der Datei {FileName}.", formFile.FileName);
+                            ModelState.AddModelError("Images", ex.Message);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Unerwarteter Fehler beim Verarbeiten der Datei {FileName}.", formFile.FileName);
                             ModelState.AddModelError("Images", $"Die Datei {formFile.FileName} konnte nicht verarbeitet werden.");
                         }
                     }
@@ -349,7 +356,7 @@ namespace MyCourse.Web.Areas.Admin.Controllers
                 await _courseService.ToggleCourseStatusAsync(id);
                 TempData["SuccessMessage"] = "Der Kursstatus wurde erfolgreich aktualisiert.";
             }
-            catch (CourseExceptions.NotFoundException ex)
+            catch (CourseNotFoundException ex)
             {
                 _logger.LogError(ex, "Kurs mit ID {CourseId} wurde nicht gefunden.", id);
                 TempData["ErrorMessage"] = "Der Kurs wurde nicht gefunden.";
@@ -380,7 +387,7 @@ namespace MyCourse.Web.Areas.Admin.Controllers
                 TempData["SuccessMessage"] = "Der Kurs wurde erfolgreich gelöscht.";
                 _logger.LogInformation("Kurs mit ID {CourseId} wurde erfolgreich gelöscht.", id);
             }
-            catch (CourseExceptions.NotFoundException ex)
+            catch (CourseNotFoundException ex)
             {
                 _logger.LogWarning(ex, "Kurs mit ID {CourseId} wurde nicht gefunden.", id);
                 TempData["ErrorMessage"] = "Der angeforderte Kurs wurde nicht gefunden.";
@@ -437,9 +444,9 @@ namespace MyCourse.Web.Areas.Admin.Controllers
 
                 return View(viewModel);
             }
-            catch (CourseExceptions.NotFoundException)
+            catch (CourseNotFoundException ex)
             {
-                TempData["ErrorMessage"] = "Der angeforderte Kurs wurde nicht gefunden.";
+                _logger.LogError(ex, "Kurs mit ID {CourseId} wurde nicht gefunden.", id);
                 return RedirectToAction("ManageCourses");
             }
             catch (Exception ex)
@@ -487,7 +494,7 @@ namespace MyCourse.Web.Areas.Admin.Controllers
                 TempData["SuccessMessage"] = "Der Kurs wurde erfolgreich aktualisiert.";
                 _logger.LogInformation("Course with ID {CourseId} updated successfully.", viewModel.Id);
             }
-            catch (CourseExceptions.NotFoundException)
+            catch (CourseNotFoundException)
             {
                 _logger.LogWarning("Course with ID {CourseId} not found during update.", viewModel.Id);
                 TempData["ErrorMessage"] = "Der angeforderte Kurs wurde nicht gefunden.";

@@ -10,13 +10,12 @@ using MyCourse.Domain.DTOs.ApplicationDtos;
 using MyCourse.Domain.DTOs.CourseDtos;
 using MyCourse.Domain.Entities;
 using MyCourse.Domain.Exceptions.CourseEx;
-using MyCourse.Domain.Exceptions.CourseExceptions.CourseEx;
 using MyCourse.Domain.Services.CourseServices;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using Xunit;
+using static MyCourse.Domain.Exceptions.CourseEx.CourseExceptions;
 
 namespace MyCourse.Tests.UnitTests.Domain.Services
 {
@@ -60,7 +59,6 @@ namespace MyCourse.Tests.UnitTests.Domain.Services
                 );
         }
 
-
         #region GetAllCoursesAsync Tests
         [Fact]
         public async Task GetAllCoursesAsync_ReturnsAllCourses()
@@ -82,7 +80,7 @@ namespace MyCourse.Tests.UnitTests.Domain.Services
                 },
                 new Course
                 {
-                    Id = 1,
+                    Id = 2,
                     Title = TestConstants.ValidTitle + "2",
                     Description = TestConstants.ValidDescription + "2",
                     CourseDate = DateTime.Today,
@@ -99,7 +97,7 @@ namespace MyCourse.Tests.UnitTests.Domain.Services
 
             var courseListDtos = new List<CourseListDto>
             {
-                new CourseListDto { Id = 1, Title = TestConstants.ValidTitle, Description = TestConstants.ValidDescription ,CourseDuration = TimeSpan.FromHours(4), CourseDate = DateTime.Today, IsActive = true },
+                new CourseListDto { Id = 1, Title = TestConstants.ValidTitle, Description = TestConstants.ValidDescription ,CourseDuration = TimeSpan.FromHours(2), CourseDate = DateTime.Today, IsActive = true },
                 new CourseListDto { Id = 2, Title = TestConstants.ValidTitle + "2", Description = TestConstants.ValidDescription + "2",CourseDuration = TimeSpan.FromHours(4) ,CourseDate = DateTime.Today, IsActive = false },
             };
 
@@ -120,7 +118,7 @@ namespace MyCourse.Tests.UnitTests.Domain.Services
 
         #region GetAllActiveCoursesAsync Tests
         [Fact]
-        public async Task GetAllActiveCoursesAsync_ReturnsAllCourses()
+        public async Task GetAllActiveCoursesAsync_ReturnsAllActiveCourses()
         {
             // Arrange 
             var courses = new List<Course>
@@ -136,18 +134,6 @@ namespace MyCourse.Tests.UnitTests.Domain.Services
                     Price = TestConstants.ValidPrice,
                     Location = TestConstants.ValidLocation,
                     IsActive = true,
-                },
-                new Course
-                {
-                    Id = 1,
-                    Title = TestConstants.ValidTitle + "2",
-                    Description = TestConstants.ValidDescription + "2",
-                    CourseDate = DateTime.Today,
-                    CourseDuration = TimeSpan.FromHours(4),
-                    MaxParticipants = 20,
-                    Price = TestConstants.ValidPrice,
-                    Location = TestConstants.ValidLocation,
-                    IsActive = false,
                 }
             };
 
@@ -156,7 +142,7 @@ namespace MyCourse.Tests.UnitTests.Domain.Services
 
             var courseListDtos = new List<CourseListDto>
             {
-                new CourseListDto { Id = 1, Title = TestConstants.ValidTitle, Description = TestConstants.ValidDescription ,CourseDuration = TimeSpan.FromHours(4), CourseDate = DateTime.Today, IsActive = true },
+                new CourseListDto { Id = 1, Title = TestConstants.ValidTitle, Description = TestConstants.ValidDescription ,CourseDuration = TimeSpan.FromHours(2), CourseDate = DateTime.Today, IsActive = true },
             };
 
             _mockMapper.Setup(mapper => mapper.Map<IEnumerable<CourseListDto>>(It.IsAny<IEnumerable<Course>>()))
@@ -217,12 +203,10 @@ namespace MyCourse.Tests.UnitTests.Domain.Services
             _mockCourseRepository.Verify(repo => repo.GetCourseByIdAsync(courseId), Times.Once());
             _mockMapper.Verify(mapper => mapper.Map<CourseDetailDto>(course), Times.Once());
 
-
         }
 
-
         [Fact]
-        public async Task GetCourseByIdAsync_NonExistingId_ThrowsNotFoundException()
+        public async Task GetCourseByIdAsync_NonExistingId_ThrowsCourseNotFoundException()
         {
             // Arrange
             int courseId = 1;
@@ -234,9 +218,9 @@ namespace MyCourse.Tests.UnitTests.Domain.Services
             Func<Task> act = async () => await _courseService.GetCourseByIdAsync(courseId);
 
             // Assert 
-            var exception = await Assert.ThrowsAsync<CourseException>(act);
+            var exception = await Assert.ThrowsAsync<CourseNotFoundException>(act);
             exception.ErrorCode.Should().Be(CourseErrorCode.NotFound);
-            exception.Message.Should().Be($"Course with id {courseId} not found.");
+            exception.Message.Should().Be($"Course with ID {courseId} not found.");
             exception.CourseId.Should().Be(courseId);
             _mockCourseRepository.Verify(repo => repo.GetCourseByIdAsync(courseId), Times.Once);
 
@@ -288,6 +272,7 @@ namespace MyCourse.Tests.UnitTests.Domain.Services
             var courseId = await _courseService.CreateCourseAsync(courseCreateDto);
 
             // Assert
+            courseId.Should().Be(1);
             _mockCreateDtoValidator.Verify(v => v.ValidateAsync(courseCreateDto, default), Times.Once);
             _mockMapper.Verify(m => m.Map<Course>(courseCreateDto), Times.Once);
             _mockCourseRepository.Verify(repo => repo.AddCourseAsync(It.IsAny<Course>()), Times.Once);
@@ -317,7 +302,7 @@ namespace MyCourse.Tests.UnitTests.Domain.Services
                 new ValidationFailure("Location", "Location is invalid."),
                 new ValidationFailure("Price", "Price must be a positive value."),
                 new ValidationFailure("CourseDate", "Course date cannot be in the past."),
-                new ValidationFailure("MaxParticipants", "Max participants must be a positive   number.")
+                new ValidationFailure("MaxParticipants", "Max participants must be a positive number.")
             };
 
             var validationResult = new ValidationResult(validationFailures);
@@ -341,7 +326,7 @@ namespace MyCourse.Tests.UnitTests.Domain.Services
 
         #region UpdateCourseAsync Tests
         [Fact]
-        public async Task UpdateCourseAsync_NonExistingId_ThrowsNotFoundException()
+        public async Task UpdateCourseAsync_NonExistingId_ThrowsCourseNotFoundException()
         {
             // Arrange 
             var courseUpdateDto = new CourseUpdateDto
@@ -362,9 +347,10 @@ namespace MyCourse.Tests.UnitTests.Domain.Services
             // Act
             Func<Task> act = async () => await _courseService.UpdateCourseAsync(courseUpdateDto);
 
-            var exception = await Assert.ThrowsAsync<CourseException>(act);
+            // Assert
+            var exception = await Assert.ThrowsAsync<CourseNotFoundException>(act);
             exception.ErrorCode.Should().Be(CourseErrorCode.NotFound);
-            exception.Message.Should().Be($"Course with id {courseUpdateDto.Id} not found.");
+            exception.Message.Should().Be($"Course with ID {courseUpdateDto.Id} not found.");
             exception.CourseId.Should().Be(courseUpdateDto.Id);
 
             _mockCourseRepository.Verify(repo => repo.GetCourseByIdAsync(courseUpdateDto.Id), Times.Once);
@@ -384,7 +370,7 @@ namespace MyCourse.Tests.UnitTests.Domain.Services
 
             var existingCourse = new Course
             {
-                Id = 99,
+                Id = courseId,
                 Title = TestConstants.ValidTitle,
                 Description = TestConstants.ValidDescription,
                 CourseDate = DateTime.Now.AddDays(1),
@@ -411,7 +397,7 @@ namespace MyCourse.Tests.UnitTests.Domain.Services
         }
 
         [Fact]
-        public async Task DeleteCourseAsync_NonExistingId_ThrowsNotFoundException()
+        public async Task DeleteCourseAsync_NonExistingId_ThrowsCourseNotFoundException()
         {
             // Arrange
             int courseId = 99;
@@ -423,9 +409,9 @@ namespace MyCourse.Tests.UnitTests.Domain.Services
             Func<Task> act = async () => await _courseService.DeleteCourseAsync(courseId);
 
             // Assert
-            var exception = await Assert.ThrowsAsync<CourseException>(act);
+            var exception = await Assert.ThrowsAsync<CourseNotFoundException>(act);
             exception.ErrorCode.Should().Be(CourseErrorCode.NotFound);
-            exception.Message.Should().Be($"Course with id {courseId} not found.");
+            exception.Message.Should().Be($"Course with ID {courseId} not found.");
             exception.CourseId.Should().Be(courseId);
 
             _mockCourseRepository.Verify(repo => repo.GetCourseByIdAsync(courseId), Times.Once);
