@@ -1,4 +1,5 @@
 ﻿using FluentValidation.Results;
+using MyCourse.Domain.Exceptions.BlogPostEx;
 using MyCourse.Domain.Exceptions.CourseEx;
 using MyCourse.Domain.Exceptions.CourseExceptions.CourseEx;
 using System;
@@ -87,5 +88,11 @@ namespace MyCourse.Domain.Exceptions.MediaEx
             : base(MediaErrorCode.UnauthorizedAccess, $"Unauthorized access to media with ID {mediaId}.", mediaId)
         {
         }
+    }
+
+    public class MediaDatabaseException : MediaException
+    {
+        public MediaDatabaseException(string message, int? mediaId = null, object? additionalData = null)
+            : base(MediaErrorCode.DatabaseError, message, mediaId, additionalData) { }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using MyCourse.Domain.Exceptions.ApplicationEx;
+using MyCourse.Domain.Exceptions.BlogPostEx;
 using MyCourse.Domain.Exceptions.ContactRequestEx;
 using MyCourse.Domain.Exceptions.CourseEx;
 using MyCourse.Domain.Exceptions.CourseExceptions.CourseEx;
@@ -44,6 +45,7 @@ namespace MyCourse.Web.Middlewares
                     MediaErrorCode.MediaAlreadyExists => (int)HttpStatusCode.Conflict,
                     MediaErrorCode.MediaNotLinkedToCourse => (int)HttpStatusCode.BadRequest,
                     MediaErrorCode.SaveFailed => (int)HttpStatusCode.Conflict,
+                    MediaErrorCode.DatabaseError => (int)HttpStatusCode.Conflict,
                     _ => (int)HttpStatusCode.InternalServerError
                 };
                 context.Response.ContentType = "application/json";
@@ -160,6 +162,42 @@ namespace MyCourse.Web.Middlewares
                 };
 
                 var json = JsonSerializer.Serialize(response);
+                await context.Response.WriteAsync(json);
+            }
+            catch (BlogPostException ex)
+            {
+                _logger.LogWarning(ex, "A blog post-related error occurred.");
+
+                context.Response.StatusCode = ex.ErrorCode switch
+                {
+                    BlogPostErrorCode.NotFound => (int)HttpStatusCode.NotFound,
+                    BlogPostErrorCode.InvalidOperation => (int)HttpStatusCode.BadRequest,
+                    BlogPostErrorCode.ValidationFailed => (int)HttpStatusCode.UnprocessableEntity,
+                    BlogPostErrorCode.DuplicateTitle => (int)HttpStatusCode.Conflict,
+                    BlogPostErrorCode.MediaNotFound => (int)HttpStatusCode.NotFound,
+                    BlogPostErrorCode.MediaLimitExceeded => (int)HttpStatusCode.BadRequest,
+                    BlogPostErrorCode.Unauthorized => (int)HttpStatusCode.Forbidden,
+                    BlogPostErrorCode.ConcurrencyConflict => (int)HttpStatusCode.Conflict,
+                    BlogPostErrorCode.InvalidTag => (int)HttpStatusCode.BadRequest,
+                    BlogPostErrorCode.DatabaseError => (int)HttpStatusCode.InternalServerError,
+                    _ => (int)HttpStatusCode.InternalServerError
+                };
+
+                context.Response.ContentType = "application/json";
+
+                var response = new ErrorResponse
+                {
+                    Error = ex.Message,
+                    Code = ex.ErrorCode.ToString(),
+                    Details = new
+                    {
+                        blogPostId = ex.BlogPostId,
+                        additionalData = ex.AdditionalData
+                    }
+                };
+
+                var json = JsonSerializer.Serialize(response);
+
                 await context.Response.WriteAsync(json);
             }
             catch (ValidationException ex)

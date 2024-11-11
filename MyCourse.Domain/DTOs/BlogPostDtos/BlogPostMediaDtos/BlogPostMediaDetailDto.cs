@@ -5,20 +5,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MyCourse.Domain.Entities
+namespace MyCourse.Domain.DTOs.BlogPostDtos.BlogPostMediaDtos
 {
-    public class Media : BaseEntity
+    public class BlogPostMediaDetailDto
     {
+        public int MediaId { get; set; }
         public string Url { get; set; } = string.Empty;
         public string FileName { get; set; } = string.Empty;
         public MediaType MediaType { get; set; }
         public string ContentType { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public long FileSize { get; set; }
-
-        // Navigation Properties
-        public ICollection<CourseMedia> CourseMedias { get; set; } = [];
-        public ICollection<ApplicationMedia> ApplicationMedias { get; set; } = [];
-        public ICollection<BlogPostMedia> BlogPostMedias { get; set; } = [];
+        public string? Caption { get; set; }
+        public int Order { get; set; }
     }
 }

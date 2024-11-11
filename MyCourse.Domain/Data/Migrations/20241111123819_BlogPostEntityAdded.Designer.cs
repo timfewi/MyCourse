@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MyCourse.Domain.Data;
 
@@ -11,9 +12,11 @@ using MyCourse.Domain.Data;
 namespace MyCourse.Domain.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241111123819_BlogPostEntityAdded")]
+    partial class BlogPostEntityAdded
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -249,87 +252,6 @@ namespace MyCourse.Domain.Data.Migrations
                     b.HasIndex("MediaId");
 
                     b.ToTable("ApplicationMedias");
-                });
-
-            modelBuilder.Entity("MyCourse.Domain.Entities.BlogPost", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("DateCreated")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DateUpdated")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsPublished")
-                        .HasColumnType("bit");
-
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
-
-                    b.Property<string>("Tags")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("BlogPosts");
-                });
-
-            modelBuilder.Entity("MyCourse.Domain.Entities.BlogPostMedia", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("BlogPostId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Caption")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("DateCreated")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DateUpdated")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("MediaId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Order")
-                        .HasColumnType("int");
-
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BlogPostId");
-
-                    b.HasIndex("MediaId");
-
-                    b.ToTable("BlogPostMedias");
                 });
 
             modelBuilder.Entity("MyCourse.Domain.Entities.ContactRequest", b =>
@@ -670,25 +592,6 @@ namespace MyCourse.Domain.Data.Migrations
                     b.Navigation("Media");
                 });
 
-            modelBuilder.Entity("MyCourse.Domain.Entities.BlogPostMedia", b =>
-                {
-                    b.HasOne("MyCourse.Domain.Entities.BlogPost", "BlogPost")
-                        .WithMany("BlogPostMedias")
-                        .HasForeignKey("BlogPostId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("MyCourse.Domain.Entities.Media", "Media")
-                        .WithMany("BlogPostMedias")
-                        .HasForeignKey("MediaId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("BlogPost");
-
-                    b.Navigation("Media");
-                });
-
             modelBuilder.Entity("MyCourse.Domain.Entities.CourseMedia", b =>
                 {
                     b.HasOne("MyCourse.Domain.Entities.Course", "Course")
@@ -713,11 +616,6 @@ namespace MyCourse.Domain.Data.Migrations
                     b.Navigation("ApplicationMedias");
                 });
 
-            modelBuilder.Entity("MyCourse.Domain.Entities.BlogPost", b =>
-                {
-                    b.Navigation("BlogPostMedias");
-                });
-
             modelBuilder.Entity("MyCourse.Domain.Entities.Course", b =>
                 {
                     b.Navigation("Applications");
@@ -728,8 +626,6 @@ namespace MyCourse.Domain.Data.Migrations
             modelBuilder.Entity("MyCourse.Domain.Entities.Media", b =>
                 {
                     b.Navigation("ApplicationMedias");
-
-                    b.Navigation("BlogPostMedias");
 
                     b.Navigation("CourseMedias");
                 });

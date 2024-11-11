@@ -15,6 +15,7 @@ using Moq;
 using MyCourse.Domain.Data.Interfaces.Repositories;
 using MyCourse.Domain.Data.Repositories.CourseRepositories;
 using MyCourse.Domain.Data.Repositories.MediaRepositories;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 
 public abstract class TestBase : IDisposable
 {
@@ -28,7 +29,9 @@ public abstract class TestBase : IDisposable
 
         // Initialisiere den DbContext mit einer InMemory-Datenbank
         _services.AddDbContext<AppDbContext>(options =>
-            options.UseInMemoryDatabase(Guid.NewGuid().ToString()));
+            options.UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning)
+        ));
 
         // Initialisiere Identity
         _services.AddIdentity<User, IdentityRole<int>>()

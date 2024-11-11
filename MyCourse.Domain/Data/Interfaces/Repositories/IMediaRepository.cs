@@ -12,6 +12,7 @@ namespace MyCourse.Domain.Data.Interfaces.Repositories
     {
         Task AddCourseMediaAsync(int courseId, int mediaId);
         void RemoveCourseMedia(CourseMedia courseMedia);
+
         Task<Media> SaveImageAsync(IFormFile file, int courseId);
         void DeleteImage(Media media);
     }

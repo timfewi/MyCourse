@@ -89,5 +89,56 @@ namespace MyCourse.Domain.Services.MediaServices
             }
         }
 
+        public async Task DeleteMediaAsync(int mediaId)
+        {
+            var media = await _mediaRepository.GetByIdAsync(mediaId);
+            if (media == null)
+            {
+                throw new MediaNotFoundException(mediaId);
+            }
+
+            try
+            {
+                _mediaRepository.DeleteImage(media);
+                await _mediaRepository.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Fehler beim Löschen des Media mit ID {mediaId}.");
+                throw new MediaDatabaseException("Failed to delete the media.", mediaId, ex.Message);
+            }
+        }
+
+        public async Task UpdateMediaAsync(int mediaId, MediaCreateDto mediaDto)
+        {
+            var media = await _mediaRepository.GetByIdAsync(mediaId);
+            if (media == null)
+            {
+                throw new MediaNotFoundException(mediaId);
+            }
+
+            try
+            {
+                var validationResult = await _mediaCreateValidator.ValidateAsync(mediaDto);
+                if (!validationResult.IsValid)
+                {
+                    _logger.LogWarning("Validation errors for MediaCreateDto: {Errors}", validationResult.Errors);
+                    throw new MediaValidationException(validationResult.Errors);
+                }
+
+                _mapper.Map(mediaDto, media);
+                _mediaRepository.Update(media);
+                await _mediaRepository.SaveChangesAsync();
+            }
+            catch (MediaException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error when updating media with ID {mediaId}.");
+                throw new MediaDatabaseException("An error occurred while updating media.", mediaId, ex.Message);
+            }
+        }
     }
 }

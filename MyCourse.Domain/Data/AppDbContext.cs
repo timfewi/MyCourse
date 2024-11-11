@@ -20,6 +20,8 @@ namespace MyCourse.Domain.Data
             CourseMedias = Set<CourseMedia>();
             ApplicationMedias = Set<ApplicationMedia>();
             ContactRequests = Set<ContactRequest>();
+            BlogPosts = Set<BlogPost>();
+            BlogPostMedias = Set<BlogPostMedia>();
         }
 
         public DbSet<Course> Courses { get; set; }
@@ -28,6 +30,8 @@ namespace MyCourse.Domain.Data
         public DbSet<CourseMedia> CourseMedias { get; set; }
         public DbSet<ApplicationMedia> ApplicationMedias { get; set; }
         public DbSet<ContactRequest> ContactRequests { get; set; }
+        public DbSet<BlogPost> BlogPosts { get; set; }
+        public DbSet<BlogPostMedia> BlogPostMedias { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

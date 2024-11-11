@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MyCourse.Domain.Data;
 
@@ -11,9 +12,11 @@ using MyCourse.Domain.Data;
 namespace MyCourse.Domain.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241111131030_BlogPostMediaEntityCreatedWithNavPropsToBlogPost")]
+    partial class BlogPostMediaEntityCreatedWithNavPropsToBlogPost
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -288,7 +291,7 @@ namespace MyCourse.Domain.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("BlogPosts");
+                    b.ToTable("BlogPost");
                 });
 
             modelBuilder.Entity("MyCourse.Domain.Entities.BlogPostMedia", b =>
@@ -329,7 +332,7 @@ namespace MyCourse.Domain.Data.Migrations
 
                     b.HasIndex("MediaId");
 
-                    b.ToTable("BlogPostMedias");
+                    b.ToTable("BlogPostMedia");
                 });
 
             modelBuilder.Entity("MyCourse.Domain.Entities.ContactRequest", b =>

@@ -17,6 +17,7 @@ namespace MyCourse.Domain.Exceptions.MediaEx
         MediaNotLinkedToCourse,
         MediaAlreadyExists,
         UnauthorizedAccess,
-        SaveFailed
+        SaveFailed,
+        DatabaseError
     }
 }
