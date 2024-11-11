@@ -81,3 +81,16 @@ body {
     max-width: 200px;
     height: auto;
 }
+
+/* Profile Image for Course details page */
+.profile-picture {
+    width: 100px;
+    height: 100px;
+    position: absolute;
+    top: 75px;
+    right: 15px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #fff;
+}
+

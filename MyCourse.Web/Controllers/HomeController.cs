@@ -32,7 +32,7 @@ namespace MyCourse.Web.Controllers
                 Title = course.Title,
                 Description = course.Description.Length > 100 ? course.Description.Substring(0, 100) + "..." : course.Description,
                 CourseDate = course.CourseDate,
-                CourseDurationFormatted = $"{course.CourseDuration.Hours} Stunden {course.CourseDuration.Minutes} Minuten",
+                CourseDuration = course.CourseDuration,
                 Location = course.Location,
                 Price = course.Price,
                 IsActive = course.IsActive,

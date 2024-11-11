@@ -20,6 +20,16 @@ namespace MyCourse.Web.Models.CourseModels
         [Display(Name = "Kursdauer")]
         public TimeSpan CourseDuration { get; set; }
 
+        [Display(Name = "Zeitspanne")]
+        public string CourseTimeSpan
+        {
+            get
+            {
+                var endTime = CourseDate.Add(CourseDuration);
+                return $"{CourseDate:HH:mm} - {endTime:HH:mm}";
+            }
+        }
+
         [Display(Name = "Derzeitige Anmeldungen")]
         public int ApplicationCount { get; set; }
         

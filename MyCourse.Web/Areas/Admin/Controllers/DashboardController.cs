@@ -1,13 +1,17 @@
-﻿using FluentValidation;
+﻿using Azure.Core;
+using FluentValidation;
 using Humanizer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyCourse.Domain.Data.Interfaces.Services;
+using MyCourse.Domain.DTOs.ContactRequestDtos;
 using MyCourse.Domain.DTOs.CourseDtos;
 using MyCourse.Domain.DTOs.MediaDtos;
+using MyCourse.Domain.Entities;
 using MyCourse.Domain.Exceptions.CourseEx;
 using MyCourse.Domain.Exceptions.MediaEx;
 using MyCourse.Web.Areas.Admin.Models.Dashboard;
+using MyCourse.Web.Areas.Admin.Models.Dashboard.Contact;
 using System.Net;
 using System.Net.Mail;
 using static MyCourse.Domain.Exceptions.CourseEx.CourseExceptions;
@@ -23,6 +27,7 @@ namespace MyCourse.Web.Areas.Admin.Controllers
         private readonly ICourseService _courseService;
         private readonly IApplicationService _applicationService;
         private readonly IMediaService _mediaService;
+        private readonly IContactService _contactService;
         private readonly IEmailService _emailService;
         public DashboardController(
             ILogger<DashboardController> logger,
@@ -30,6 +35,7 @@ namespace MyCourse.Web.Areas.Admin.Controllers
             ICourseService courseService,
             IApplicationService applicationService,
             IMediaService mediaService,
+            IContactService contactService,
             IEmailService emailService)
         {
 
@@ -38,6 +44,7 @@ namespace MyCourse.Web.Areas.Admin.Controllers
             _courseService = courseService;
             _applicationService = applicationService;
             _mediaService = mediaService;
+            _contactService = contactService;
             _emailService = emailService;
         }
 
@@ -508,6 +515,224 @@ namespace MyCourse.Web.Areas.Admin.Controllers
             }
 
             return RedirectToAction("ManageCourses");
+        }
+
+        // GET: Admin/Dashboard/ContactRequests
+        [HttpGet]
+        public async Task<IActionResult> ContactRequests(int? selectedRequestId)
+        {
+            try
+            {
+                var activeRequests = await _contactService.GetUnansweredContactRequestsAsync();
+                var inactiveRequests = await _contactService.GetAnsweredContactRequestsAsync();
+
+                var activeListItems = activeRequests.Select(r => new ContactRequestListItemViewModel
+                {
+                    Id = r.Id,
+                    Name = r.Name,
+                    Email = r.Email,
+                    Subject = r.Subject,
+                    RequestDate = r.DateCreated,
+                    IsAnswered = r.IsAnswered,
+                }).ToList();
+
+                var inactiveListItems = inactiveRequests.Select(r => new ContactRequestListItemViewModel
+                {
+                    Id = r.Id,
+                    Name = r.Name,
+                    Email = r.Email,
+                    Subject = r.Subject,
+                    RequestDate = r.DateCreated,
+                    IsAnswered = r.IsAnswered,
+                }).ToList();
+
+                ContactRequestDetailViewModel? selectedRequestViewModel = null;
+
+                if (selectedRequestId.HasValue)
+                {
+                    var selectedRequest = await _contactService.GetContactRequestByIdAsync(selectedRequestId.Value);
+                    if (selectedRequest != null)
+                    {
+                        selectedRequestViewModel = new ContactRequestDetailViewModel
+                        {
+                            Id = selectedRequest.Id,
+                            Name = selectedRequest.Name,
+                            Email = selectedRequest.Email,
+                            Subject = selectedRequest.Subject,
+                            Message = selectedRequest.Message,
+                            RequestDate = selectedRequest.DateCreated,
+                            AnswerMessage = selectedRequest.AnswerMessage ?? string.Empty,
+                        };
+                    }
+                }
+
+                var viewModel = new ContactRequestViewModel
+                {
+                    ActiveContactRequests = activeListItems,
+                    InactiveContactRequests = inactiveListItems,
+                    SelectedRequest = selectedRequestViewModel,
+                };
+
+                return View(viewModel);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Fehler beim Abrufen der Kontaktanfragen.");
+                TempData["ErrorMessage"] = "Es ist ein Fehler beim Abrufen der Kontaktanfragen aufgetreten.";
+                return View(new ContactRequestViewModel());
+            }
+        }
+
+        // GET: Admin/Dashboard/GetContactRequestDetail
+        [HttpGet]
+        public async Task<IActionResult> GetContactRequestDetail(int id)
+        {
+            try
+            {
+                var selectedRequest = await _contactService.GetContactRequestByIdAsync(id);
+                if (selectedRequest == null)
+                {
+                    return NotFound();
+                }
+
+                var selectedRequestViewModel = new ContactRequestDetailViewModel
+                {
+                    Id = selectedRequest.Id,
+                    Name = selectedRequest.Name,
+                    Email = selectedRequest.Email,
+                    Subject = selectedRequest.Subject,
+                    Message = selectedRequest.Message,
+                    RequestDate = selectedRequest.DateCreated,
+                    AnswerMessage = selectedRequest.AnswerMessage ?? string.Empty,
+                    IsAnswered = selectedRequest.IsAnswered
+                };
+
+                return PartialView("_ContactRequestDetailPartial", selectedRequestViewModel);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Fehler beim Laden der Kontaktanfrage mit ID {Id}.", id);
+                return StatusCode(500, "Interner Serverfehler");
+            }
+        }
+
+
+        // POST: Admin/Dashboard/RespondToContactRequest
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RespondToContactRequest(ContactRequestDetailViewModel viewModel)
+        {
+            if (!ModelState.IsValid)
+            {
+                try
+                {
+                    // Aktive (unbeantwortete) Kontaktanfragen abrufen
+                    var activeRequests = await _contactService.GetUnansweredContactRequestsAsync();
+
+                    // Inaktive (beantwortete) Kontaktanfragen abrufen
+                    var inactiveRequests = await _contactService.GetAnsweredContactRequestsAsync();
+
+                    var activeListItems = activeRequests.Select(r => new ContactRequestListItemViewModel
+                    {
+                        Id = r.Id,
+                        Name = r.Name,
+                        Email = r.Email,
+                        Subject = r.Subject,
+                        RequestDate = r.DateCreated,
+                        IsAnswered = r.IsAnswered,
+                    }).ToList();
+
+                    var inactiveListItems = inactiveRequests.Select(r => new ContactRequestListItemViewModel
+                    {
+                        Id = r.Id,
+                        Name = r.Name,
+                        Email = r.Email,
+                        Subject = r.Subject,
+                        RequestDate = r.DateCreated,
+                        IsAnswered = r.IsAnswered,
+                    }).ToList();
+
+                    var combinedViewModel = new ContactRequestViewModel
+                    {
+                        ActiveContactRequests = activeListItems,
+                        InactiveContactRequests = inactiveListItems,
+                        SelectedRequest = viewModel,
+                    };
+
+                    return View("ContactRequests", combinedViewModel);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Fehler beim Laden der Kontaktanfragen nach ungültigem ModelState.");
+                    TempData["ErrorMessage"] = "Es ist ein Fehler beim Laden der Kontaktanfragen aufgetreten.";
+
+                    return View("ContactRequests", new ContactRequestViewModel());
+                }
+            }
+
+            try
+            {
+                var respondDto = new ContactRequestRespondDto
+                {
+                    Id = viewModel.Id,
+                    AnswerMessage = viewModel.AnswerMessage,
+                };
+
+                await _contactService.RespondToContactRequestAsync(respondDto);
+
+                TempData["SuccessMessage"] = "Die Antwort wurde erfolgreich gesendet.";
+                return RedirectToAction(nameof(ContactRequests));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Fehler beim Beantworten der Kontaktanfrage mit ID {Id}.", viewModel.Id);
+                TempData["ErrorMessage"] = "Es ist ein Fehler beim Beantworten der Kontaktanfrage aufgetreten.";
+
+                try
+                {
+                    // Aktive (unbeantwortete) Kontaktanfragen abrufen
+                    var activeRequests = await _contactService.GetUnansweredContactRequestsAsync();
+
+                    // Inaktive (beantwortete) Kontaktanfragen abrufen
+                    var inactiveRequests = await _contactService.GetAnsweredContactRequestsAsync();
+
+                    var activeListItems = activeRequests.Select(r => new ContactRequestListItemViewModel
+                    {
+                        Id = r.Id,
+                        Name = r.Name,
+                        Email = r.Email,
+                        Subject = r.Subject,
+                        RequestDate = r.DateCreated,
+                        IsAnswered = r.IsAnswered,
+                    }).ToList();
+
+                    var inactiveListItems = inactiveRequests.Select(r => new ContactRequestListItemViewModel
+                    {
+                        Id = r.Id,
+                        Name = r.Name,
+                        Email = r.Email,
+                        Subject = r.Subject,
+                        RequestDate = r.DateCreated,
+                        IsAnswered = r.IsAnswered,
+                    }).ToList();
+
+                    var combinedViewModel = new ContactRequestViewModel
+                    {
+                        ActiveContactRequests = activeListItems,
+                        InactiveContactRequests = inactiveListItems,
+                        SelectedRequest = viewModel
+                    };
+
+                    return View("ContactRequests", combinedViewModel);
+                }
+                catch (Exception innerEx)
+                {
+                    _logger.LogError(innerEx, "Fehler beim Laden der Kontaktanfragen nach einem Antwortfehler.");
+                    TempData["ErrorMessage"] = "Es ist ein schwerwiegender Fehler beim Beantworten der Kontaktanfrage aufgetreten.";
+
+                    return View("ContactRequests", new ContactRequestViewModel());
+                }
+            }
         }
 
     }

@@ -1,0 +1,115 @@
+﻿
+/* Benutzerdefinierte Styles für die Kontaktliste */
+.contact-request-list {
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.contact-request-item {
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+    .contact-request-item:hover {
+        background-color: #f8f9fa;
+    }
+
+.contact-request-active {
+    background-color: #e9ecef !important;
+}
+
+/* Anpassung für den Chat-ähnlichen Bereich */
+#contactDetails {
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.badge-status {
+    font-size: 0.9em;
+}
+
+/* Zusätzliche Styles für die horizontale Anordnung */
+.list-group-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+    .list-group-item .info {
+        display: flex;
+        align-items: center;
+        flex: 1;
+        min-width: 200px;
+    }
+
+        .list-group-item .info .name {
+            font-weight: 500;
+            margin-right: 15px;
+        }
+
+        .list-group-item .info .subject {
+            color: #6c757d;
+            margin-right: 15px;
+        }
+
+    .list-group-item .date {
+        white-space: nowrap;
+        margin-right: 15px;
+    }
+
+    .list-group-item .status {
+        white-space: nowrap;
+    }
+
+@media (max-width: 768px) {
+    .list-group-item .info {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+        .list-group-item .info .name,
+        .list-group-item .info .subject,
+        .list-group-item .date,
+        .list-group-item .status {
+            margin-right: 0;
+            margin-bottom: 5px;
+        }
+}
+
+
+/* Benutzerdefinierte Styles für Chat-ähnliche Darstellung */
+.chat-card {
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.chat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.chat-message {
+    background-color: #f1f1f1;
+    border-radius: 15px;
+    padding: 15px;
+    margin-bottom: 10px;
+    position: relative;
+}
+
+    .chat-message::before {
+        content: "";
+        position: absolute;
+        top: 10px;
+        left: -10px;
+        width: 0;
+        height: 0;
+        border-top: 10px solid transparent;
+        border-bottom: 10px solid transparent;
+        border-right: 10px solid #f1f1f1;
+    }
+
+.chat-form .btn {
+    min-width: 100px;
+}

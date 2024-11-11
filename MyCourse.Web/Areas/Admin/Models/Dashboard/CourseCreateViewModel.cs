@@ -36,6 +36,7 @@ namespace MyCourse.Web.Areas.Admin.Models.Dashboard
         [Display(Name = "Bilder hochladen")]
         public List<IFormFile> Images { get; set; } = new List<IFormFile>();
 
+        [Display(Name = "Aktiv")]
         public bool IsActive { get; set; }
     }
 }

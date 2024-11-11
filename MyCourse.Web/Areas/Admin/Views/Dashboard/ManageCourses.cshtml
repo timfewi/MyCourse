@@ -1,4 +1,5 @@
 ﻿@model MyCourse.Web.Areas.Admin.Models.Dashboard.ManageCoursesViewModel
+@using MyCourse.Web.Helpers
 
 @{
     ViewData["Title"] = "Kurse verwalten";
@@ -52,17 +53,10 @@
                         <td>@course.Id</td>
                         <td>@course.Title</td>
                         <td>
-                            @if (course.Description.Length > 100)
-                            {
-                                @course.Description.Substring(0, 100)
-                            }
-                            else
-                            {
-                                @course.Description
-                            }
+                            @Html.Raw(HtmlHelpers.TruncateHtml(course.Description, 100))
                         </td>
                         <td>@course.CourseDate.ToString("dd.MM.yyyy HH:mm")</td>
-                        <td>@course.CourseDuration.Hours Stunden @course.CourseDuration.Minutes Minuten</td>
+                        <td>@course.CourseTimeSpan</td>
                         <td>@course.Location</td>
                         <td>@course.Price.ToString("C")</td>
                         <td>
@@ -105,8 +99,6 @@
     </table>
 </div>
 
-<!-- DataTables JS -->
-
 @section Scripts{
     <script>
         $(document).ready(function () {
@@ -120,7 +112,20 @@
                 ],
                 "paging": true,
                 "searching": true,
-                "info": true
+                "info": true,
+                "autoWidth": true,
+                "columns": [
+                    { "width": "3%" },   // ID
+                    { "width": "15%" },  // Titel
+                    { "width": "20%" },  // Beschreibung
+                    { "width": "10%" },  // Kursdatum
+                    { "width": "8%" },  // Kursdauer
+                    { "width": "10%" },  // Ort
+                    { "width": "4%" },  // Preis
+                    { "width": "3%" },   // Status
+                    { "width": "5%" },   // Bild
+                    { "width": "27%" }   // Aktionen
+                ]
             });
         });
     </script>

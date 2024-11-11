@@ -25,7 +25,12 @@
         <div id="wrapper">
             <!-- Sidebar -->
             <nav id="sidebar">
-                <div class="sidebar-heading text-white">Admin Panel</div>
+                <div class="sidebar-heading text-white d-flex justify-content-between align-items-center">
+                    <span>Admin Panel</span>
+                    <button class="btn btn-sm btn-primary d-md-none" id="sidebar-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
                 <div class="list-group list-group-flush">
                     <a href="@Url.Action("Index", "Dashboard", new { area = "Admin" })" class="list-group-item list-group-item-action bg-dark text-white">
                         <i class="fas fa-tachometer-alt me-2"></i> Dashboard
@@ -35,6 +40,9 @@
                     </a>
                     <a href="@Url.Action("ManageCourses", "Dashboard", new { area = "Admin" })" class="list-group-item list-group-item-action bg-dark text-white">
                         <i class="fas fa-list me-2"></i> Kurse verwalten
+                    </a>
+                    <a href="@Url.Action("ContactRequests", "Dashboard", new { area = "Admin" })" class="list-group-item list-group-item-action bg-dark text-white">
+                        <i class="fas fa-address-card me-2"></i> Kontaktanfragen
                     </a>
                     <!-- Weitere Admin-Navigationselemente hier hinzufügen -->
                     <form id="logout-form" asp-area="Admin" asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
@@ -46,18 +54,23 @@
                 </div>
             </nav>
             <!-- /#sidebar -->
+            <!-- Overlay -->
+            <div id="overlay" class="d-none"></div>
+            <!-- Overlay -->
             <!-- Page Content -->
             <div id="page-content-wrapper">
                 <!-- Navbar -->
-                <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
+                <nav class="navbar navbar-expand-lg navbar-dark bg-dark border-bottom fixed-top">
                     <div class="container-fluid">
-                        <button class="btn btn-primary" id="menu-toggle"><i class="fas fa-bars"></i></button>
-                        <a href="/" class="navbar-brand ms-3">Zurück zur Startseite</a>
+                        <button class="btn btn-secondary" id="menu-toggle">
+                            <i class="fas fa-bars"></i>
+                        </button>
+                        <a href="/" class="navbar-brand ms-3 text-white">Zurück zur Startseite</a>
                     </div>
                 </nav>
                 <!-- /Navbar -->
                 <!-- Main Content -->
-                <div class="container-fluid mt-4">
+                <div class="container-fluid mt-5 pt-4">
                     @RenderBody()
                 </div>
                 <!-- /Main Content -->
@@ -94,23 +107,16 @@
         </div>
     }
 
-
-
-    <footer class="border-top footer text-muted mt-4">
-        <div class="container">
-            &copy; 2024 - MyCourse.Admin - <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Dashboard</a>
-        </div>
-    </footer>
-
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/flatpickr/flatpickr.min.js"></script>
     <script src="~/lib/toastr.js/toastr.min.js"></script>
     <script src="~/lib/font-awesome/js/all.min.js"></script>
+    <script src="~/lib/tinymce/tinymce.min.js"></script>
     <script src="https://cdn.datatables.net/2.1.8/js/dataTables.js"></script>
     <script src="~/lib/fontawesome-iconpicker/js/fontawesome-iconpicker.min.js"></script>
-    <script src="~/js/admin.js" asp-append-version="true"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="@Url.Content("~/js/admin.js")" asp-append-version="true"></script>
+    <script src="@Url.Content("~/js/site.js")" asp-append-version="true"></script>
 
     <script>
         $(document).ready(function () {

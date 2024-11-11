@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using MyCourse.Domain.Exceptions.ApplicationEx;
+using MyCourse.Domain.Exceptions.ContactRequestEx;
 using MyCourse.Domain.Exceptions.CourseEx;
 using MyCourse.Domain.Exceptions.CourseExceptions.CourseEx;
 using MyCourse.Domain.Exceptions.MediaEx;
@@ -125,6 +126,36 @@ namespace MyCourse.Web.Middlewares
                     {
                         applicationId = ex.ApplicationId,
                         additionalData = ex.AdditionalData
+                    }
+                };
+
+                var json = JsonSerializer.Serialize(response);
+                await context.Response.WriteAsync(json);
+            }
+            catch(ContactRequestException ex)
+            {
+                _logger.LogWarning(ex, "A contactrequest-related error occurred.");
+
+                context.Response.StatusCode = ex.ErrorCode switch
+                {
+                    ContactRequestErrorCode.NotFound => (int)HttpStatusCode.NotFound,
+                    ContactRequestErrorCode.EmailSendingFailed => (int)HttpStatusCode.InternalServerError,
+                    ContactRequestErrorCode.UnauthorizedAccess => (int)HttpStatusCode.Unauthorized,
+                    ContactRequestErrorCode.ValidationError => (int)HttpStatusCode.BadRequest,
+                    ContactRequestErrorCode.AlreadyAnswered => (int)HttpStatusCode.BadRequest,
+                    _ => (int)HttpStatusCode.InternalServerError
+                };
+                context.Response.ContentType = "application/json";
+
+                var response = new ErrorResponse
+                {
+
+                    Error = ex.Message,
+                    Code = ex.ErrorCode.ToString(),
+                    Details = new
+                    {
+                        contactRequestId = ex.ContactRequestId,
+                        additionalData = ex.AdditionalData,
                     }
                 };
 

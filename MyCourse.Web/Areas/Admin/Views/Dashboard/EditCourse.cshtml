@@ -25,7 +25,7 @@
         <label asp-for="Description" class="form-label">Beschreibung</label>
         <div class="input-group">
             <span class="input-group-text"><i class="fas fa-align-left"></i></span>
-            <textarea asp-for="Description" class="form-control" rows="5" placeholder="Beschreibung eingeben"></textarea>
+            <textarea asp-for="Description" class="form-control tinymce" rows="5" placeholder="Beschreibung eingeben"></textarea>
         </div>
         <span asp-validation-for="Description" class="text-danger"></span>
     </div>

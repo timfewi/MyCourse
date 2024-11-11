@@ -14,6 +14,7 @@ using MyCourse.Domain.Extensions;
 using MyCourse.Domain.MappingProfiles;
 using System.Configuration;
 using MyCourse.Domain.POCOs;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -72,6 +73,7 @@ builder.Services.AddAuthorization(options =>
 
 // Binden der SMTP-Einstellungen
 builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpSettings"));
+builder.Services.AddSingleton<SmtpSettings>(sp => sp.GetRequiredService<IOptions<SmtpSettings>>().Value);
 
 // FluentValidation registrieren
 builder.Services.AddFluentValidationAutoValidation();

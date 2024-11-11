@@ -61,17 +61,77 @@
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2024 - MyCourse.Web - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <footer class="bg-light text-muted pt-5 pb-4">
+        <div class="container text-md-left">
+            <div class="row text-md-left">
+                <!-- Über uns -->
+                <div class="col-md-3 col-lg-3 col-xl-3 mx-auto mt-3">
+                    <h5 class="text-uppercase mb-4 font-weight-bold">MyCourse.Web</h5>
+                    <p>
+                        MyCourse.Web bietet hochwertige Malkurse für Anfänger und Fortgeschrittene. Entfalte deine Kreativität mit unseren erfahrenen Lehrern.
+                    </p>
+                </div>
+
+                <!-- Schnellzugriff -->
+                <div class="col-md-2 col-lg-2 col-xl-2 mx-auto mt-3">
+                    <h5 class="text-uppercase mb-4 font-weight-bold">Schnellzugriff</h5>
+                    <p><a href="@Url.Action("Index", "Home")" class="text-reset">Startseite</a></p>
+                    <p><a href="@Url.Action("Index", "Contact")" class="text-reset">Kontakt</a></p>
+                </div>
+
+                <!-- Rechtliches -->
+                <div class="col-md-3 col-lg-2 col-xl-2 mx-auto mt-3">
+                    <h5 class="text-uppercase mb-4 font-weight-bold">Rechtliches</h5>
+                    <p><a href="@Url.Action("Privacy", "Home")" class="text-reset">Datenschutz</a></p>
+                    <p><a href="@Url.Action("Terms", "Home")" class="text-reset">Nutzungsbedingungen</a></p>
+                    <p><a href="@Url.Action("FAQ", "Home")" class="text-reset">FAQ</a></p>
+                </div>
+
+                <!-- Kontakt -->
+                <div class="col-md-4 col-lg-3 col-xl-3 mx-auto mt-3">
+                    <h5 class="text-uppercase mb-4 font-weight-bold">Kontakt</h5>
+                    <p><i class="fas fa-home me-3"></i> Musterstraße 123, 12345 Musterstadt</p>
+                    <p><i class="fas fa-envelope me-3"></i> info@mycourse.web</p>
+                    <p><i class="fas fa-phone me-3"></i> +49 123 456789</p>
+                    <p><i class="fas fa-print me-3"></i> +49 123 456780</p>
+                </div>
+            </div>
+
+            <hr class="mb-4">
+
+            <div class="row align-items-center">
+                <!-- Soziale Medien -->
+                <div class="col-md-7 col-lg-8">
+                    <p>© 2024 MyCourse.Web. Alle Rechte vorbehalten.</p>
+                </div>
+
+                <!-- Newsletter -->
+                <div class="col-md-5 col-lg-4">
+                    <form>
+                        <div class="input-group">
+                            <input type="email" class="form-control" placeholder="E-Mail-Adresse" aria-label="E-Mail-Adresse" aria-describedby="button-addon2">
+                            <button class="btn btn-primary" type="submit" id="button-addon2">Abonnieren</button>
+                        </div>
+                    </form>
+                    <div class="mt-3">
+                        <a href="#" class="me-4 text-reset"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="me-4 text-reset"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="me-4 text-reset"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="me-4 text-reset"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+            </div>
         </div>
     </footer>
+
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/lib/font-awesome/js/all.min.js"></script>
     <script src="~/lib/toastr.js/toastr.min.js"></script>
+    <script src="~/lib/tinymce/tinymce.min.js"></script>
     <script src="~/lib/fontawesome-iconpicker/js/fontawesome-iconpicker.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="@Url.Content("~/js/site.js")" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

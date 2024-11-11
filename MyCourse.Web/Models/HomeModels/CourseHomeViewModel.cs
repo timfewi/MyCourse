@@ -17,7 +17,17 @@ namespace MyCourse.Web.Models.HomeModels
         public DateTime CourseDate { get; set; }
 
         [Display(Name = "Kursdauer")]
-        public string CourseDurationFormatted { get; set; } = string.Empty;
+        public TimeSpan CourseDuration { get; set; }
+
+        [Display(Name = "Zeitspanne")]
+        public string CourseTimeSpan
+        {
+            get
+            {
+                var endTime = CourseDate.Add(CourseDuration);
+                return $"{CourseDate:HH:mm} - {endTime:HH:mm}";
+            }
+        }
 
         [Display(Name = "Standort")]
         public string Location { get; set; } = string.Empty;

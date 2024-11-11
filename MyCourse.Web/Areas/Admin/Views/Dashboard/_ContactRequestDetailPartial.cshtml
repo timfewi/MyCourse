@@ -1,0 +1,87 @@
+﻿@model MyCourse.Web.Areas.Admin.Models.Dashboard.Contact.ContactRequestDetailViewModel
+
+<div class="card shadow-sm">
+    <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+        <h4 class="card-title mb-0"><i class="fas fa-envelope"></i> @Model.Subject</h4>
+        <small>@Model.RequestDate.ToString("dd.MM.yyyy HH:mm")</small>
+    </div>
+    <div class="card-body">
+        <div class="mb-3">
+            <h6 class="card-subtitle text-muted d-flex align-items-center">
+                <i class="fas fa-user me-2"></i> Von: @Model.Name
+                <a href="mailto:@Model.Email" class="text-decoration-none ms-3">
+                    <i class="fas fa-envelope me-1"></i> @Model.Email
+                </a>
+            </h6>
+        </div>
+        <hr />
+        <div class="mb-4">
+            <h5 class="mb-3 d-flex align-items-center">
+                <i class="fas fa-comment-dots me-2"></i> Nachricht
+            </h5>
+            <div class="p-3 bg-light border rounded">
+                @Html.Raw(Model.Message)
+            </div>
+        </div>
+        <hr />
+
+
+        @if (Model.IsAnswered)
+        {
+            <!-- Anzeige der bestehenden Antwort -->
+            <div class="mb-4">
+                <h5 class="mb-3 d-flex align-items-center">
+                    <i class="fas fa-reply me-2"></i> Ihre Antwort
+                </h5>
+                <div class="p-3 bg-light border rounded">
+                    @Html.Raw(Model.AnswerMessage)
+                </div>
+            </div>
+        }
+        else
+        {
+            <!-- Antwortformular anzeigen, wenn die Anfrage noch nicht beantwortet wurde -->
+            <div class="mb-3">
+                <h5 class="d-flex align-items-center">
+                    <i class="fas fa-reply me-2"></i> Antworten
+                </h5>
+            </div>
+            <form asp-area="Admin" asp-controller="Dashboard" asp-action="RespondToContactRequest" method="post" id="responseForm" class="mt-3">
+                @Html.AntiForgeryToken()
+                <div class="mb-3">
+                    <label asp-for="AnswerMessage" class="form-label d-flex align-items-center">
+                        <i class="fas fa-pencil-alt me-2"></i> Ihre Antwort
+                    </label>
+                    <textarea asp-for="AnswerMessage" class="form-control" rows="5" placeholder="Ihre Antwort hier eingeben..."></textarea>
+                    <span asp-validation-for="AnswerMessage" class="text-danger"></span>
+                </div>
+                <input type="hidden" asp-for="Id" />
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-success btn-sm me-2">
+                        <i class="fas fa-paper-plane me-1"></i> Antwort senden
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-sm" id="cancelButton">
+                        <i class="fas fa-times me-1"></i> Abbrechen
+                    </button>
+                </div>
+            </form>
+        }
+
+        @if (Model.IsAnswered)
+        {
+            <!-- Optional: Zusätzliche Information, dass die Anfrage bereits beantwortet wurde -->
+            <div class="alert alert-info mt-4" role="alert">
+                <i class="fas fa-info-circle me-2"></i> Diese Anfrage wurde bereits beantwortet.
+            </div>
+        }
+    </div>
+</div>
+
+@* Optional: JavaScript für den Abbrechen-Button *@
+@section Scripts {
+    <script>
+        document.getElementById('cancelButton').addEventListener('click', function () {
+            document.getElementById('responseForm').reset();
+        });
+    </script>
+}
