@@ -44,6 +44,12 @@
                     <a href="@Url.Action("ContactRequests", "Dashboard", new { area = "Admin" })" class="list-group-item list-group-item-action bg-dark text-white">
                         <i class="fas fa-address-card me-2"></i> Kontaktanfragen
                     </a>
+                    <a href="@Url.Action("CreateBlogPost", "Dashboard", new { area = "Admin" })" class="list-group-item list-group-item-action bg-dark text-white">
+                        <i class="fas fa-add me-2"></i> Blog erstellen
+                    </a>
+                    <a href="@Url.Action("ManageBlogPosts", "Dashboard", new { area = "Admin" })" class="list-group-item list-group-item-action bg-dark text-white">
+                        <i class="fas fa-blog me-2"></i> Blogs verwalten
+                    </a>
                     <!-- Weitere Admin-Navigationselemente hier hinzufügen -->
                     <form id="logout-form" asp-area="Admin" asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
                         @Html.AntiForgeryToken()

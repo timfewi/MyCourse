@@ -42,7 +42,7 @@
 
   <ItemGroup>
     <Folder Include="Views\Errors\" />
-    <Folder Include="wwwroot\images\" />
+    <Folder Include="wwwroot\images\banner\" />
     <Folder Include="wwwroot\uploads\videos\" />
   </ItemGroup>
 

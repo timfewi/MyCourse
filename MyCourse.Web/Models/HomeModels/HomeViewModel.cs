@@ -6,6 +6,8 @@ namespace MyCourse.Web.Models.HomeModels
     {
         public List<CourseHomeViewModel> ActiveCourses { get; set; } = new List<CourseHomeViewModel>();
         public IEnumerable<Feature>? Features { get; set; }
+        public List<BlogPostHomeViewModel> Blogs { get; set; } = new List<BlogPostHomeViewModel>();
+        public int TotalPublishedBlogPosts { get; set; }
     }
 
     public class Feature

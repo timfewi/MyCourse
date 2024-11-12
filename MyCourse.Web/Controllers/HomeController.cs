@@ -11,14 +11,17 @@ namespace MyCourse.Web.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly ICourseService _courseService;
+        private readonly IBlogPostService _blogPostService;
 
         public HomeController(
             ILogger<HomeController> logger,
-            ICourseService courseService
+            ICourseService courseService,
+            IBlogPostService blogPostService
             )
         {
             _logger = logger;
             _courseService = courseService;
+            _blogPostService = blogPostService;
         }
 
         public async Task<IActionResult> Index()
@@ -49,10 +52,23 @@ namespace MyCourse.Web.Controllers
                 new Feature { IconClass = "fas fa-users", Title = "Community", Description = "Werde Teil unserer Community und vernetze dich mit anderen Lernenden." }
             };
 
+            var allPublishedBlogs = await _blogPostService.GetPublishedBlogPostsAsync();
+            var top4Blogs = allPublishedBlogs.Take(4).Select(b => new BlogPostHomeViewModel
+            {
+                Id = b.Id,
+                Title = b.Title,
+                ShortDescription = b.ShortDescription,
+                ThumbnailUrl = b.ThumbnailUrl,
+                DateCreated = b.DateCreated,
+                Tags = b.Tags,
+            }).ToList();
+
             var viewModel = new HomeViewModel
             {
                 ActiveCourses = activeCoursesHomeViewModel,
-                Features = features
+                Features = features,
+                Blogs = top4Blogs,
+                TotalPublishedBlogPosts = allPublishedBlogs.Count(),
             };
 
             return View(viewModel);

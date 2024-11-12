@@ -1,0 +1,116 @@
+﻿@model MyCourse.Web.Areas.Admin.Models.Dashboard.BlogPost.BlogPostCreateViewModel
+
+@{
+    ViewData["Title"] = "Neuen BlogPost erstellen";
+}
+
+<div class="container-fluid my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0"><i class="fas fa-plus-circle me-2"></i>Neuen Blog-Beitrag erstellen</h3>
+                </div>
+                <div class="card-body">
+                    <form asp-action="CreateBlogPost" method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+
+                        <!-- Validation Summary -->
+                        @Html.ValidationSummary(true, "", new { @class = "text-danger mb-3" })
+
+                        <!-- Titel -->
+                        <div class="mb-3">
+                            <label asp-for="Title" class="form-label"><i class="fas fa-heading me-2"></i>Titel</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-heading"></i></span>
+                                <input asp-for="Title" class="form-control" placeholder="Gib den BlogPost-Titel ein" />
+                            </div>
+                            <span asp-validation-for="Title" class="text-danger"></span>
+                        </div>
+
+                        <!-- Beschreibung -->
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label"><i class="fas fa-file-alt me-2"></i>Beschreibung</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-align-left"></i></span>
+                                <textarea asp-for="Description" class="form-control tinymce" rows="5" placeholder="Gib eine ausführliche Beschreibung des BlogPosts ein"></textarea>
+                            </div>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+
+                        <!-- Tags -->
+                        <div class="mb-3">
+                            <label asp-for="TagsInput" class="form-label"><i class="fas fa-tags me-2"></i>Tags (durch Komma getrennt)</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-tags"></i></span>
+                                <input asp-for="TagsInput" class="form-control" placeholder="Gib die Tags ein, getrennt durch Komma" />
+                            </div>
+                            <span asp-validation-for="TagsInput" class="text-danger"></span>
+                        </div>
+
+                        <!-- Veröffentlichen Switch -->
+                        <div class="form-check form-switch mb-4 d-flex align-items-center">
+                            <input asp-for="IsPublished" class="form-check-input" id="IsPublishedSwitch" />
+                            <label class="form-check-label ms-2 me-3" for="IsPublishedSwitch">BlogPost veröffentlichen</label>
+                            <span class="switch-state badge bg-secondary">Nein</span>
+                        </div>
+
+                        <!-- Bilder hochladen -->
+                        <div class="mb-3">
+                            <label asp-for="Images" class="form-label"><i class="fas fa-images me-2"></i>Bilder hochladen</label>
+                            <input asp-for="Images" type="file" class="form-control" multiple onchange="updateFileList()" id="Images" accept="image/*" />
+                            <span asp-validation-for="Images" class="text-danger"></span>
+                        </div>
+
+                        <!-- Bereich zur Anzeige der ausgewählten Dateien -->
+                        <div id="fileList" class="mb-3"></div>
+
+                        <!-- Buttons -->
+                        <div class="d-flex justify-content-between">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Erstellen
+                            </button>
+                            <a asp-action="ManageBlogPosts" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Zurück
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bildvorschau Modal -->
+<div class="modal fade" id="imagePreviewModal" tabindex="-1" aria-labelledby="imagePreviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Bildvorschau</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img src="" alt="Bildvorschau" class="modal-img" id="previewImage">
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Begrenzen der maximalen Breite und Höhe des Bildes in der Modal */
+    .modal-img {
+        max-width: 100%; /* Passt die Breite des Bildes an die Modal-Breite an */
+        max-height: 500px; /* Begrenzung der maximalen Höhe des Bildes */
+        object-fit: contain; /* Stellt sicher, dass das gesamte Bild sichtbar bleibt */
+    }
+
+    /* Optional: Hinzufügen eines Hintergrundes oder Schatten für bessere Sichtbarkeit */
+    .modal-body {
+        background-color: #f8f9fa;
+    }
+</style>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/blogpost/blogpost-create.js"></script>
+}

@@ -28,7 +28,7 @@ namespace MyCourse.Domain.Validation.DtoValidations.MediaDtoValidations
 
             RuleFor(x => x.FileSize)
                 .GreaterThan(0).WithMessage("Die Dateigröße muss größer als 0 sein.")
-                .LessThanOrEqualTo(5 * 1024 * 1024).WithMessage("Die Datei darf nicht größer als 5 MB sein."); // Beispielgrenze
+                .LessThanOrEqualTo(10 * 1024 * 1024).WithMessage("Die Datei darf nicht größer als 10 MB sein.");
 
             // Optional: Weitere Validierungen für Beschreibung, falls erforderlich
         }

@@ -278,7 +278,7 @@ namespace MyCourse.Domain.Tests.Services
                 }
             };
 
-            _blogPostRepoMock.Setup(repo => repo.GetByIdAsync(blogPostId))
+            _blogPostRepoMock.Setup(repo => repo.GetBlogPostByIdAsync(blogPostId))
                 .ReturnsAsync(blogPost);
 
             var blogPostDetailDto = new BlogPostDetailDto
@@ -318,7 +318,7 @@ namespace MyCourse.Domain.Tests.Services
             result.Medias.Should().HaveCount(1);
             result.Medias.First().MediaId.Should().Be(1);
 
-            _blogPostRepoMock.Verify(repo => repo.GetByIdAsync(blogPostId), Times.Once);
+            _blogPostRepoMock.Verify(repo => repo.GetBlogPostByIdAsync(blogPostId), Times.Once);
             _mapperMock.Verify(m => m.Map<BlogPostDetailDto>(blogPost), Times.Once);
         }
 
@@ -328,7 +328,7 @@ namespace MyCourse.Domain.Tests.Services
             // Arrange
             int blogPostId = 99;
 
-            _blogPostRepoMock.Setup(repo => repo.GetByIdAsync(blogPostId))
+            _blogPostRepoMock.Setup(repo => repo.GetBlogPostByIdAsync(blogPostId))
                 .ReturnsAsync((BlogPost)null!);
 
             // Act
@@ -340,7 +340,7 @@ namespace MyCourse.Domain.Tests.Services
             exception.Message.Should().Be($"BlogPost with ID {blogPostId} not found.");
             exception.BlogPostId.Should().Be(blogPostId);
 
-            _blogPostRepoMock.Verify(repo => repo.GetByIdAsync(blogPostId), Times.Once);
+            _blogPostRepoMock.Verify(repo => repo.GetBlogPostByIdAsync(blogPostId), Times.Once);
             _mapperMock.Verify(m => m.Map<BlogPostDetailDto>(It.IsAny<BlogPost>()), Times.Never);
         }
 

@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using MyCourse.Domain.DTOs.BlogPostDtos;
 using MyCourse.Domain.DTOs.BlogPostDtos.BlogPostMediaDtos;
 using System;
 using System.Collections.Generic;

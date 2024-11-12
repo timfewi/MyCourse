@@ -1,0 +1,126 @@
+﻿@model MyCourse.Web.Areas.Admin.Models.Dashboard.BlogPost.BlogPostManageViewModel
+@using MyCourse.Web.Helpers
+
+@{
+    ViewData["Title"] = "BlogPosts verwalten";
+}
+
+<h1 class="mt-4">BlogPosts verwalten</h1>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+<div class="mb-3">
+    <a href="@Url.Action("CreateBlogPost", "Dashboard", new { area = "Admin" })" class="btn btn-success">
+        <i class="fas fa-plus"></i> Neuer Blog-Beitrag
+    </a>
+</div>
+
+<div class="table-responsive">
+    <table id="blogPostsTable" class="table table-bordered table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Titel</th>
+                <th>Beschreibung</th>
+                <th>Erstellungsdatum</th>
+                <th>Tags</th>
+                <th>Thumbnail</th>
+                <th>Status</th>
+                <th>Aktionen</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.BlogPosts != null && Model.BlogPosts.Any())
+            {
+                foreach (var post in Model.BlogPosts)
+                {
+                    <tr>
+                        <td>@post.Id</td>
+                        <td>@post.Title</td>
+                        <td>
+                            @Html.Raw(HtmlHelpers.TruncateHtml(post.ShortDescription, 100))
+                        </td>
+                        <td>@post.DateCreated.ToString("dd.MM.yyyy")</td>
+                        <td>@string.Join(", ", post.Tags)</td>
+                        <td>
+                            <img src="@post.ThumbnailUrl" alt="@post.Title" class="img-thumbnail" style="width: 100px; height: auto;">
+                        </td>
+                        <td>
+                            @if (post.IsPublished)
+                            {
+                                <span class="badge bg-success">Veröffentlicht</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">Nicht veröffentlicht</span>
+                            }
+                        </td>
+                        <td>
+                            <a href="@Url.Action("EditBlogPost", "Dashboard", new { area = "Admin", id = post.Id })" class="btn btn-sm btn-primary me-2">
+                                <i class="fas fa-edit"></i> Bearbeiten
+                            </a>
+                            <form asp-action="ToggleBlogPostStatus" asp-controller="Dashboard" asp-area="Admin" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@post.Id" />
+                                <button type="submit" class="btn btn-sm @(post.IsPublished ? "btn-warning" : "btn-success")" title="Status ändern">
+                                    <i class="fas @(post.IsPublished ? "fa-toggle-on" : "fa-toggle-off")"></i>
+                                    @(post.IsPublished ? "Deaktivieren" : "Veröffentlichen")
+                                </button>
+                            </form>
+                            <form asp-action="DeleteBlogPost" asp-controller="Dashboard" asp-area="Admin" method="post" class="d-inline" onsubmit="return confirm('Sind Sie sicher, dass Sie diesen BlogPost löschen möchten?');">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@post.Id" />
+                                <button type="submit" class="btn btn-sm btn-danger">
+                                    <i class="fas fa-trash-alt"></i> Löschen
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+@section Scripts{
+    <script>
+        $(document).ready(function () {
+            $('#blogPostsTable').DataTable({
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/2.1.8/i18n/de-DE.json",
+                    "emptyTable": "Es sind derzeit keine BlogPosts verfügbar."
+                },
+                "columnDefs": [
+                    { "orderable": false, "targets": [6, 7] }
+                ],
+                "paging": true,
+                "searching": true,
+                "info": true,
+                "autoWidth": true,
+                "columns": [
+                    { "width": "3%" },   // ID
+                    { "width": "15%" },  // Titel
+                    { "width": "32%" },  // Beschreibung
+                    { "width": "4%" },  // Erstellungsdatum
+                    { "width": "10%" },  // Tags
+                    { "width": "8%" },   // Thumbnail
+                    { "width": "5%" },   // Status
+                    { "width": "33%" }   // Aktionen
+                ]
+            });
+        });
+    </script>
+
+}

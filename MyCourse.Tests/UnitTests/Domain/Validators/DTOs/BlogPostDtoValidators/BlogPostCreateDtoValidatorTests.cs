@@ -119,10 +119,10 @@ namespace MyCourse.Tests.UnitTests.Domain.Validators.DTOs.BlogPostDtoValidators
                 {
                     new BlogPostMediaCreateDto
                     {
-                        Url = "invalid-url",
+                        Url = TestConstants.InvalidMediaUrl,
                         FileName = "image1.jpg",
                         MediaType = MediaType.Image,
-                        ContentType = "image/jpeg",
+                        ContentType = TestConstants.ValidContentType,
                         Description = "Description for image 1",
                         FileSize = 1024,
                         Caption = "Caption 1"

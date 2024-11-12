@@ -47,7 +47,7 @@
                 <i class="fas fa-book-open text-primary me-2"></i>Kursbeschreibung
             </h3>
             <p>
-                @Html.Raw(HtmlHelpers.TruncateHtml(Model.Description, 100))
+                @Html.Raw(Model.Description)
             </p>
 
             <!-- Zusätzliche Informationen -->
@@ -93,7 +93,7 @@
             <!-- Kontaktinformationen -->
             <div class="card position-relative">
                 <!-- Profilbild -->
-                <img src="~/images/profilepic.jpeg" alt="Profilbild" class="profile-picture">
+                <img src="~/images/profile/profile.jpg" alt="Profilbild" class="profile-picture">
                 <div class="card-body">
                     <h4 class="card-title">Kontaktinformationen</h4>
                     <p><i class="fas fa-user text-primary me-2"></i><strong>Ansprechpartner:</strong> Max Mustermann</p>

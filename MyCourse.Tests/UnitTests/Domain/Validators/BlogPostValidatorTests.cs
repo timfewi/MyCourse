@@ -29,7 +29,7 @@ namespace MyCourse.Tests.UnitTests.Domain.Validators
                     {
                         Media = new Media
                         {
-                            Url = "https://example.com/media1.jpg",
+                            Url = TestConstants.ValidMediaUrl,
                             MediaType = MediaType.Image
                         }
                     }
@@ -196,7 +196,7 @@ namespace MyCourse.Tests.UnitTests.Domain.Validators
                 {
                     Media = new Media
                     {
-                        Url = "invalid-url",
+                        Url = TestConstants.InvalidMediaUrl,
                         MediaType = (MediaType)999 
                     }
                 }

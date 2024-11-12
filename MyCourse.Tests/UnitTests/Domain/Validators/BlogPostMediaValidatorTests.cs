@@ -51,9 +51,8 @@ namespace MyCourse.Tests.UnitTests.Domain.Validators
         }
 
         [Theory]
-        [InlineData("invalid-url")]
         [InlineData("ftp://example.com/media.jpg")]
-        [InlineData("http:/invalid.com")]
+        [InlineData("http://example.com/invalid.com")]
         public void Should_Have_Error_When_Media_Url_Is_Invalid(string url)
         {
             // Arrange
@@ -71,8 +70,8 @@ namespace MyCourse.Tests.UnitTests.Domain.Validators
         }
 
         [Theory]
-        [InlineData("http://example.com/media.jpg")]
-        [InlineData("https://example.com/media.png")]
+        [InlineData("/media.jpg")]
+        [InlineData("/media.png")]
         public void Should_Not_Have_Error_When_Media_Url_Is_Valid(string url)
         {
             // Arrange

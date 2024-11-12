@@ -1,0 +1,338 @@
+﻿@model MyCourse.Web.Models.BlogPostModels.BlogPostDetailViewModel
+
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<!-- Blog Detail Section -->
+<section id="blog-detail" class="py-5">
+    <div class="container">
+        <!-- Zurück zur Startseite Button -->
+        <div class="mb-4">
+            <a href="@Url.Action("Index", "Home")" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i> Zurück zur Startseite
+            </a>
+        </div>
+
+        <div class="blog-header mb-5">
+            <h1 class="mb-3">@Model.Title</h1>
+            <div class="text-muted mb-3">
+                <span>Veröffentlicht am @Model.DateCreated.ToString("dd.MM.yyyy")</span>
+                @if (Model.PublishedDate.HasValue)
+                {
+                    <span class="ms-3">Aktualisiert am @Model.PublishedDate.Value.ToString("dd.MM.yyyy")</span>
+                }
+            </div>
+            <div class="tags mb-4">
+                @foreach (var tag in Model.Tags)
+                {
+                    <span class="badge bg-secondary me-1">@tag</span>
+                }
+            </div>
+        </div>
+        <div class="blog-content mb-5">
+            @Html.Raw(Model.Description)
+        </div>
+        @if (Model.Medias != null && Model.Medias.Any())
+        {
+            <h3 class="mb-4">Weitere Bilder</h3>
+
+            // Gruppierung der Bilder in Gruppen von 5
+            var totalGroups = (int)Math.Ceiling(Model.Medias.Count / 5.0);
+            int globalIndex = 0; // Zähler für den globalen Bildindex
+
+            @for (int groupIndex = 0; groupIndex < totalGroups; groupIndex++)
+            {
+                var group = Model.Medias.Skip(groupIndex * 5).Take(5).ToList();
+                bool isEvenRow = groupIndex % 2 == 0; // Für abwechselnde Layouts
+
+                <div class="row mb-5 align-items-center">
+                    @if (isEvenRow)
+                    {
+                        <!-- Großes Bild links -->
+                        <div class="col-md-6 mb-4 mb-md-0">
+                            @if (group.Count > 0)
+                            {
+                                var largeImage = group[0];
+                                <div class="image-container">
+                                    <img src="@largeImage.Url" alt="@Model.Title" class="img-fluid rounded shadow-sm"
+                                         onclick="showImagePreview(@globalIndex, '@largeImage.Url')" loading="lazy">
+                                </div>
+                                globalIndex++;
+                            }
+                        </div>
+                        <div class="col-md-6">
+                            <div class="row">
+                                @foreach (var image in group.Skip(1).Take(4))
+                                {
+                                    <div class="col-6 mb-4">
+                                        <div class="image-container">
+                                            <img src="@image.Url" alt="@Model.Title" class="img-fluid rounded shadow-sm"
+                                                 onclick="showImagePreview(@globalIndex, '@image.Url')" loading="lazy">
+                                        </div>
+                                        @{
+                                            globalIndex++;
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <!-- Großes Bild rechts -->
+                        <div class="col-md-6">
+                            <div class="row">
+                                @foreach (var image in group.Skip(1).Take(4))
+                                {
+                                    <div class="col-6 mb-4">
+                                        <div class="image-container">
+                                            <img src="@image.Url" alt="@Model.Title" class="img-fluid rounded shadow-sm"
+                                                 onclick="showImagePreview(@globalIndex, '@image.Url')" loading="lazy">
+                                        </div>
+                                        @{
+                                            globalIndex++;
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4 mb-md-0">
+                            @if (group.Count > 0)
+                            {
+                                var largeImage = group[0];
+                                <div class="image-container">
+                                    <img src="@largeImage.Url" alt="@Model.Title" class="img-fluid rounded shadow-sm"
+                                         onclick="showImagePreview(@globalIndex, '@largeImage.Url')" loading="lazy">
+                                </div>
+                                globalIndex++;
+                            }
+                        </div>
+                    }
+                </div>
+            }
+        }
+
+    </div>
+</section>
+
+<!-- Bildvorschau Modal -->
+<div class="modal fade" id="imagePreviewModal" tabindex="-1" aria-labelledby="imagePreviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content bg-transparent border-0">
+            <div class="modal-body p-0">
+                <div id="courseCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5000">
+                    <div id="carousel-indicators" class="carousel-indicators">
+                        <!-- Dynamisch durch JS befüllt -->
+                    </div>
+                    <div id="carousel-inner" class="carousel-inner">
+                        <!-- Dynamisch durch JS befüllt -->
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#courseCarousel" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon bg-dark rounded-circle p-3" aria-hidden="true"></span>
+                        <span class="visually-hidden">Vorherige</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#courseCarousel" data-bs-slide="next">
+                        <span class="carousel-control-next-icon bg-dark rounded-circle p-3" aria-hidden="true"></span>
+                        <span class="visually-hidden">Nächste</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Grundlegende Typografie */
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color: #333;
+        background-color: #f8f9fa;
+    }
+
+    #blog-detail {
+        background-color: #fff;
+        padding: 40px;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-top: 30px;
+        margin-bottom: 30px;
+    }
+
+    .blog-header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #212529;
+    }
+
+    .blog-header .text-muted span {
+        font-size: 0.9rem;
+    }
+
+    .blog-header .tags .badge {
+        font-size: 0.85rem;
+        padding: 0.5em 0.75em;
+    }
+
+    .blog-content {
+        font-size: 1.1rem;
+        line-height: 1.6;
+    }
+
+    .image-container {
+        position: relative;
+        overflow: hidden;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .image-container img {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            width: 100%;
+            height: auto;
+        }
+
+        .image-container:hover img {
+            transform: scale(1.05);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+    .modal-img {
+        max-width: 100%;
+        max-height: 80vh;
+        object-fit: contain;
+        border-radius: 8px;
+    }
+
+    /* Zusätzliche Abstände zwischen den kleinen Bildern */
+    .col-md-6 .row .col-6 {
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+
+    .carousel-control-prev-icon,
+    .carousel-control-next-icon {
+        background-color: rgba(0, 0, 0, 0.5);
+        border-radius: 50%;
+        padding: 10px;
+    }
+
+        .carousel-control-prev-icon:hover,
+        .carousel-control-next-icon:hover {
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+
+    .carousel-inner img {
+        border-radius: 8px;
+    }
+
+    @@media (max-width: 768px) {
+        #blog-detail {
+            padding: 20px;
+        }
+
+        .blog-header h1 {
+            font-size: 2rem;
+        }
+
+        .blog-content {
+            font-size: 1rem;
+        }
+
+        .carousel-control-prev-icon,
+        .carousel-control-next-icon {
+            padding: 5px;
+        }
+    }
+
+    @@media (prefers-color-scheme: dark) {
+        body {
+            background-color: #121212;
+            color: #e0e0e0;
+        }
+
+        #blog-detail {
+            background-color: #1e1e1e;
+            box-shadow: 0 4px 6px rgba(255, 255, 255, 0.1);
+        }
+
+        .blog-header h1 {
+            color: #ffffff;
+        }
+
+        .blog-header .text-muted span {
+            color: #aaaaaa;
+        }
+
+        .blog-header .tags .badge {
+            background-color: #444444;
+        }
+
+        .modal-body {
+            background-color: #1e1e1e;
+        }
+
+        .carousel-control-prev-icon,
+        .carousel-control-next-icon {
+            background-color: rgba(255, 255, 255, 0.5);
+        }
+
+            .carousel-control-prev-icon:hover,
+            .carousel-control-next-icon:hover {
+                background-color: rgba(255, 255, 255, 0.8);
+            }
+    }
+</style>
+
+@section Scripts {
+    <script>
+        // Bildvorschau Modal initialisieren
+        window.showImagePreview = function (selectedIndex, imageUrl) {
+            const courseCarousel = document.getElementById('courseCarousel');
+            const carouselIndicators = document.getElementById('carousel-indicators');
+            const carouselInner = document.getElementById('carousel-inner');
+
+            // Leeren der bisherigen Inhalte
+            carouselIndicators.innerHTML = '';
+            carouselInner.innerHTML = '';
+
+            // Sammeln aller Medias URLs
+            var medias = @Html.Raw(Json.Serialize(Model.Medias!.Select(m => m.Url)));
+
+            medias.forEach((url, index) => {
+                // Erstellen der Indikatoren
+                var indicator = document.createElement('button');
+                indicator.type = 'button';
+                indicator.setAttribute('data-bs-target', '#courseCarousel');
+                indicator.setAttribute('data-bs-slide-to', index);
+                if (index === selectedIndex) { // Setzen des ausgewählten Indikators
+                    indicator.classList.add('active');
+                    indicator.setAttribute('aria-current', 'true');
+                }
+                indicator.setAttribute('aria-label', 'Slide ' + (index + 1));
+                carouselIndicators.appendChild(indicator);
+
+                // Erstellen der Carousel Items
+                var carouselItem = document.createElement('div');
+                carouselItem.classList.add('carousel-item');
+                if (index === selectedIndex) { // Setzen des ausgewählten Carousel-Items
+                    carouselItem.classList.add('active');
+                }
+
+                var img = document.createElement('img');
+                img.src = url;
+                img.classList.add('d-block', 'w-100', 'modal-img');
+                img.alt = 'Bildvorschau';
+
+                carouselItem.appendChild(img);
+                carouselInner.appendChild(carouselItem);
+            });
+
+            const imagePreviewModal = new bootstrap.Modal(document.getElementById('imagePreviewModal'), {
+                keyboard: true
+            });
+            imagePreviewModal.show();
+        };
+    </script>
+}

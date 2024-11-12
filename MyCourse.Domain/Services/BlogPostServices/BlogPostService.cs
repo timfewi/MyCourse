@@ -7,6 +7,7 @@ using MyCourse.Domain.Attributes;
 using MyCourse.Domain.Data;
 using MyCourse.Domain.Data.Interfaces.Repositories;
 using MyCourse.Domain.Data.Interfaces.Services;
+using MyCourse.Domain.Data.Repositories.CourseRepositories;
 using MyCourse.Domain.DTOs.BlogPostDtos;
 using MyCourse.Domain.DTOs.BlogPostDtos.BlogPostMediaDtos;
 using MyCourse.Domain.DTOs.MediaDtos;
@@ -19,6 +20,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using static MyCourse.Domain.Exceptions.BlogPostEx.BlogPostExceptions;
+using static MyCourse.Domain.Exceptions.CourseEx.CourseExceptions;
 
 namespace MyCourse.Domain.Services.BlogPostServices
 {
@@ -84,7 +86,7 @@ namespace MyCourse.Domain.Services.BlogPostServices
         /// <exception cref="BlogPostNotFoundException">Wenn der BlogPost nicht gefunden wird.</exception>
         public async Task<BlogPostDetailDto> GetBlogPostDetailAsync(int id)
         {
-            var blogPost = await _blogPostRepository.GetByIdAsync(id);
+            var blogPost = await _blogPostRepository.GetBlogPostByIdAsync(id);
             if (blogPost == null || !blogPost.IsPublished)
             {
                 throw new BlogPostNotFoundException(id);
@@ -326,6 +328,31 @@ namespace MyCourse.Domain.Services.BlogPostServices
             {
                 _logger.LogError(ex, $"Fehler beim Löschen des BlogPosts mit ID {id}.");
                 throw new BlogPostExceptions.BlogPostDatabaseException("Failed to delete the blog post.", id, ex.Message);
+            }
+        }
+
+        public async Task ToggleBlogPostStatusAsync(int blogPostId)
+        {
+            var blogPost = await _blogPostRepository.GetBlogPostByIdAsync(blogPostId);
+            if (blogPost == null)
+            {
+                _logger.LogWarning("BlogPost with ID {BlogPostId} not found for status toggle.", blogPostId);
+                throw new CourseNotFoundException(blogPostId);
+            }
+
+            blogPost.IsPublished = !blogPost.IsPublished;
+            blogPost.DateUpdated = DateTime.Now;
+            _blogPostRepository.UpdateBlogPost(blogPost);
+
+            try
+            {
+                await _blogPostRepository.SaveChangesAsync();
+                _logger.LogInformation("BlogPost '{BlogPostTitle}' status toggled to {Status}.", blogPost.Title, blogPost.IsPublished ? "Veröffentlicht" : "Unveröffentlicht");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while toggling status for BlogPost with ID {BlogPostId}.", blogPostId);
+                throw new CourseSaveException("An error occurred while toggling blog status.", blogPostId, ex);
             }
         }
     }

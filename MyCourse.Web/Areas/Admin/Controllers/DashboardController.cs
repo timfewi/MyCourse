@@ -2,8 +2,12 @@
 using FluentValidation;
 using Humanizer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using MyCourse.Domain.Data.Interfaces.Services;
+using MyCourse.Domain.DTOs.BlogPostDtos;
+using MyCourse.Domain.DTOs.BlogPostDtos.BlogPostMediaDtos;
 using MyCourse.Domain.DTOs.ContactRequestDtos;
 using MyCourse.Domain.DTOs.CourseDtos;
 using MyCourse.Domain.DTOs.MediaDtos;
@@ -11,9 +15,12 @@ using MyCourse.Domain.Entities;
 using MyCourse.Domain.Exceptions.CourseEx;
 using MyCourse.Domain.Exceptions.MediaEx;
 using MyCourse.Web.Areas.Admin.Models.Dashboard;
+using MyCourse.Web.Areas.Admin.Models.Dashboard.BlogPost;
 using MyCourse.Web.Areas.Admin.Models.Dashboard.Contact;
+using System.Linq;
 using System.Net;
 using System.Net.Mail;
+using static MyCourse.Domain.Exceptions.BlogPostEx.BlogPostExceptions;
 using static MyCourse.Domain.Exceptions.CourseEx.CourseExceptions;
 
 namespace MyCourse.Web.Areas.Admin.Controllers
@@ -28,6 +35,7 @@ namespace MyCourse.Web.Areas.Admin.Controllers
         private readonly IApplicationService _applicationService;
         private readonly IMediaService _mediaService;
         private readonly IContactService _contactService;
+        private readonly IBlogPostService _blogPostService;
         private readonly IEmailService _emailService;
         public DashboardController(
             ILogger<DashboardController> logger,
@@ -36,6 +44,7 @@ namespace MyCourse.Web.Areas.Admin.Controllers
             IApplicationService applicationService,
             IMediaService mediaService,
             IContactService contactService,
+            IBlogPostService blogPostService,
             IEmailService emailService)
         {
 
@@ -45,6 +54,7 @@ namespace MyCourse.Web.Areas.Admin.Controllers
             _applicationService = applicationService;
             _mediaService = mediaService;
             _contactService = contactService;
+            _blogPostService = blogPostService;
             _emailService = emailService;
         }
 
@@ -228,10 +238,7 @@ namespace MyCourse.Web.Areas.Admin.Controllers
             }
         }
 
-        private string SanitizeFileName(string fileName)
-        {
-            return string.Concat(fileName.Split(Path.GetInvalidFileNameChars()));
-        }
+    
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -735,5 +742,364 @@ namespace MyCourse.Web.Areas.Admin.Controllers
             }
         }
 
+
+        #region - BlogPost -
+
+        // GET: Admin/Dashboard/CreateBlogPost
+        [HttpGet]
+        public IActionResult CreateBlogPost()
+        {
+            return View();
+        }
+
+        // POST: Admin/Dashboard/CreateBlogPost
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateBlogPost(BlogPostCreateViewModel viewModel)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(viewModel);
+            }
+
+            var createDto = new BlogPostCreateDto
+            {
+                Title = viewModel.Title,
+                Description = viewModel.Description,
+                IsPublished = viewModel.IsPublished,
+                Tags = string.IsNullOrWhiteSpace(viewModel.TagsInput) ? new List<string>() :
+                    viewModel.TagsInput.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                                        .Select(tag => tag.Trim()).ToList(),
+                Medias = new List<BlogPostMediaCreateDto>()
+            };
+
+            if (viewModel.Images != null && viewModel.Images.Count > 0)
+            {
+                var permittedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+                var maxFileSize = 10 * 1024 * 1024;
+
+                foreach (var formFile in viewModel.Images)
+                {
+                    try
+                    {
+                        if (formFile.Length > 0 && formFile.Length <= maxFileSize)
+                        {
+                            var extension = Path.GetExtension(formFile.FileName).ToLowerInvariant();
+
+                            if (string.IsNullOrEmpty(extension) || !permittedExtensions.Contains(extension))
+                            {
+                                ModelState.AddModelError("Images", $"Die Datei {formFile.FileName} hat ein ungültiges Datei-Format.");
+                                continue;
+                            }
+
+                            var fileName = Path.GetFileNameWithoutExtension(formFile.FileName);
+                            fileName = SanitizeFileName(fileName);
+
+                            var newFileName = $"{fileName}_{DateTime.Now.Ticks}{extension}";
+                            var uploadsFolder = Path.Combine(_hostingEnvironment.WebRootPath, "uploads", "images");
+
+                            if (!Directory.Exists(uploadsFolder))
+                            {
+                                Directory.CreateDirectory(uploadsFolder);
+                            }
+
+                            var filePath = Path.Combine(uploadsFolder, newFileName);
+
+                            using (var stream = new FileStream(filePath, FileMode.Create))
+                            {
+                                await formFile.CopyToAsync(stream);
+                            }
+
+                            var mediaDto = new BlogPostMediaCreateDto
+                            {
+                                Url = $"/uploads/images/{newFileName}",
+                                FileName = newFileName,
+                                MediaType = Domain.Enums.MediaType.Image,
+                                ContentType = formFile.ContentType,
+                                Description = string.Empty,
+                                FileSize = formFile.Length,
+                                Caption = string.Empty,
+                            };
+
+                            createDto.Medias.Add(mediaDto);
+                        }
+                        else
+                        {
+                            ModelState.AddModelError("Images", $"Die Datei {formFile.FileName} ist zu groß oder leer.");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Fehler beim Verarbeiten der Datei {FileName}.", formFile.FileName);
+                        ModelState.AddModelError("Images", ex.Message);
+                    }
+                }
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return View(viewModel);
+            }
+
+            try
+            {
+                var blogPost = await _blogPostService.CreateBlogPostAsync(createDto);
+                TempData["SuccessMessage"] = "Der BlogPost wurde erfolgreich erstellt.";
+                return RedirectToAction(nameof(ManageBlogPosts));
+            }
+            catch (ValidationException ex)
+            {
+                foreach (var error in ex.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error.ErrorMessage);
+                }
+                return View(viewModel);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Fehler beim Erstellen des BlogPosts.");
+                ModelState.AddModelError(string.Empty, "Es ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.");
+                return View(viewModel);
+            }
+
+        }
+
+        // GET: Admin/Dashboard/EditBlogPost/{id}
+        [HttpGet]
+        public async Task<IActionResult> EditBlogPost(int id)
+        {
+            try
+            {
+                var blogPost = await _blogPostService.GetBlogPostDetailAsync(id);
+                if (blogPost == null)
+                {
+                    TempData["ErrorMessage"] = "Der BlogPost wurd nicht gefunden.";
+                    return RedirectToAction(nameof(ManageBlogPosts));
+                }
+
+                var viewModel = new BlogPostEditViewModel
+                {
+                    Id = blogPost.Id,
+                    Title = blogPost.Title,
+                    Description = blogPost.Description,
+                    IsPublished = blogPost.IsPublished,
+                    ExistingImages = blogPost.Medias.Select(m => new ExistingImageViewModel
+                    {
+                        MediaId = m.MediaId,
+                        Url = m.Url,
+                        ToDelete = false
+                    }).ToList(),
+                    NewImages = new List<IFormFile>()
+                };
+
+                return View(viewModel);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Fehler beim Laden des BlogPosts mit ID {id}.", id);
+                TempData["ErrorMessage"] = "Es ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.";
+                return RedirectToAction(nameof(ManageBlogPosts));
+            }
+        }
+
+        // POST: Admin/Dashboard/EditBlogPost/{id}
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditBlogPost(BlogPostEditViewModel viewModel)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(viewModel);
+            }
+
+            var updateDto = new BlogPostCreateDto
+            {
+                Title = viewModel.Title,
+                Description = viewModel.Description,
+                IsPublished = viewModel.IsPublished,
+                Tags = string.IsNullOrWhiteSpace(viewModel.TagsInput) ? new List<string>() :
+                        viewModel.TagsInput.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                        .Select(tag => tag.Trim()).ToList(),
+                Medias = new List<BlogPostMediaCreateDto>()
+            };
+
+            foreach (var existingImage in viewModel.ExistingImages)
+            {
+                if (!existingImage.ToDelete)
+                {
+                    var mediaDto = new BlogPostMediaCreateDto
+                    {
+                        Url = existingImage.Url,
+                        FileName = Path.GetFileName(existingImage.Url),
+                        MediaType = Domain.Enums.MediaType.Image,
+                        ContentType = string.Empty, // Falls benötigt
+                        Description = string.Empty, // Falls benötigt
+                        FileSize = 0, // Falls benötigt
+                        Caption = string.Empty,
+                    };
+                    updateDto.Medias.Add(mediaDto);
+                }
+            }
+
+            if (viewModel.NewImages != null && viewModel.NewImages.Count > 0)
+            {
+                var permittedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+                var maxFileSize = 10 * 1024 * 1024;
+
+                foreach (var formFile in viewModel.NewImages)
+                {
+                    try
+                    {
+                        if (formFile.Length > 0 && formFile.Length <= maxFileSize)
+                        {
+                            var extension = Path.GetExtension(formFile.FileName).ToLowerInvariant();
+
+                            if (string.IsNullOrEmpty(extension) || !permittedExtensions.Contains(extension))
+                            {
+                                ModelState.AddModelError("Images", $"Die Datei {formFile.FileName} hat ein ungültiges Datei-Format.");
+                                continue;
+                            }
+
+                            var fileName = Path.GetFileNameWithoutExtension(formFile.FileName);
+                            fileName = SanitizeFileName(fileName);
+
+                            var newFileName = $"{fileName}_{DateTime.Now.Ticks}{extension}";
+                            var uploadsFolder = Path.Combine(_hostingEnvironment.WebRootPath, "uploads", "images");
+
+                            if (!Directory.Exists(uploadsFolder))
+                            {
+                                Directory.CreateDirectory(uploadsFolder);
+                            }
+
+                            var filePath = Path.Combine(uploadsFolder, newFileName);
+
+                            using (var stream = new FileStream(filePath, FileMode.Create))
+                            {
+                                await formFile.CopyToAsync(stream);
+                            }
+
+                            var mediaDto = new BlogPostMediaCreateDto
+                            {
+                                Url = $"/uploads/images/{newFileName}",
+                                FileName = newFileName,
+                                MediaType = Domain.Enums.MediaType.Image,
+                                ContentType = formFile.ContentType,
+                                Description = string.Empty,
+                                FileSize = formFile.Length,
+                                Caption = string.Empty,
+                            };
+
+                            updateDto.Medias.Add(mediaDto);
+                        }
+                        else
+                        {
+                            ModelState.AddModelError("Images", $"Die Datei {formFile.FileName} ist zu groß oder leer.");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Fehler beim Verarbeiten der Datei {FileName}.", formFile.FileName);
+                        ModelState.AddModelError("Images", ex.Message);
+                    }
+                }
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return View(viewModel);
+            }
+
+            try
+            {
+                await _blogPostService.UpdateBlogPostAsync(viewModel.Id, updateDto);
+                TempData["SuccessMessage"] = "Der BlogPost wurde erfolgreich aktualisiert.";
+                return RedirectToAction(nameof(ManageBlogPosts));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Fehler beim Aktualisieren des BlogPosts mit ID {Id}.", viewModel.Id);
+                ModelState.AddModelError(string.Empty, "Es ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.");
+                return View(viewModel);
+            }
+
+        }
+
+
+        // GET: Admin/Dashboard/ManageBlogPosts
+        [HttpGet]
+        public async Task<IActionResult> ManageBlogPosts()
+        {
+            try
+            {
+                var blogPosts = await _blogPostService.GetAllBlogPostsAsync();
+                var viewModel = new BlogPostManageViewModel
+                {
+                    BlogPosts = blogPosts
+                };
+                return View(viewModel);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Fehler beim Abrufen der BlogPosts.");
+                TempData["ErrorMessage"] = "Es ist ein Fehler beim Laden der BlogPosts aufgetreten.";
+                return View(new BlogPostManageViewModel());
+            }
+        }
+
+        // POST: Admin/Dashboard/DeleteBlogPost
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteBlogPost(int id)
+        {
+            try
+            {
+                await _blogPostService.DeleteBlogPostAsync(id);
+                TempData["SuccessMessage"] = "Der BlogPost wurde erfolgreich gelöscht.";
+            }
+            catch (BlogPostNotFoundException ex)
+            {
+                _logger.LogError(ex, "BlogPost mit ID {BlogPostId} wurde nicht gefunden.", id);
+                TempData["ErrorMessage"] = "Der BlogPost wurde nicht gefunden.";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Fehler beim Löschen des BlogPosts mit ID {BlogPostId}.", id);
+                TempData["ErrorMessage"] = "Es ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.";
+            }
+
+            return RedirectToAction(nameof(ManageBlogPosts));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ToggleBlogPostStatus(int id)
+        {
+            try
+            {
+                await _blogPostService.ToggleBlogPostStatusAsync(id);
+                TempData["SuccessMessage"] = "Der Blog wurde erfolgreich aktualisiert.";
+            }
+            catch (BlogPostNotFoundException ex)
+            {
+                _logger.LogError(ex, "Blog mit ID {BlogPostId} wurde nicht gefunden.", id);
+                TempData["ErrorMessage"] = "Der Blog wurde nicht gefunden.";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Fehler beim Aktualisieren des Blogstatus für Blog mit ID {BlogPostId}.", id);
+                TempData["ErrorMessage"] = "Es ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.";
+            }
+
+            return RedirectToAction("ManageBlogPosts");
+        }
+
+
+        #endregion
+
+        // Helper functions
+        private string SanitizeFileName(string fileName)
+        {
+            return string.Concat(fileName.Split(Path.GetInvalidFileNameChars()));
+        }
     }
 }

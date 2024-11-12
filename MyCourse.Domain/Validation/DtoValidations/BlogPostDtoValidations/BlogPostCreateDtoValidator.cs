@@ -63,7 +63,8 @@ namespace MyCourse.Domain.Validation.DtoValidations.BlogPostDtoValidations
                 .IsInEnum().WithMessage("Invalid media type.");
 
             RuleFor(x => x.ContentType)
-                .NotEmpty().WithMessage("Content type is required.");
+                .NotEmpty().WithMessage("Content type is required.")
+                .Must(BeAValidContentType).WithMessage("The ContentType is invalid.");
 
             RuleFor(x => x.FileSize)
                          .GreaterThan(0).WithMessage("File size must be greater than zero.")
@@ -76,8 +77,13 @@ namespace MyCourse.Domain.Validation.DtoValidations.BlogPostDtoValidations
         }
         private bool BeAValidUrl(string url)
         {
-            return Uri.TryCreate(url, UriKind.Absolute, out Uri? uriResult)
-                   && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
+            return Uri.TryCreate(url, UriKind.RelativeOrAbsolute, out _);
+        }
+
+        private bool BeAValidContentType(string contentType)
+        {
+            var permittedContentTypes = new[] { "image/jpeg", "image/png", "image/gif", "image/jpg" };
+            return !string.IsNullOrEmpty(contentType) && permittedContentTypes.Contains(contentType);
         }
     }
 

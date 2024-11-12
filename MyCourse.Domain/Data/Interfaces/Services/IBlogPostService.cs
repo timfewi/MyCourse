@@ -1,5 +1,4 @@
-﻿using MyCourse.Domain.DTOs.BlogPostDtos.BlogPostMediaDtos;
-using MyCourse.Domain.DTOs.BlogPostDtos;
+﻿using MyCourse.Domain.DTOs.BlogPostDtos;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,5 +15,6 @@ namespace MyCourse.Domain.Data.Interfaces.Services
         Task<BlogPostDetailDto> CreateBlogPostAsync(BlogPostCreateDto createDto);
         Task<BlogPostDetailDto> UpdateBlogPostAsync(int id, BlogPostCreateDto updateDto);
         Task DeleteBlogPostAsync(int id);
+        Task ToggleBlogPostStatusAsync(int courseId);
     }
 }

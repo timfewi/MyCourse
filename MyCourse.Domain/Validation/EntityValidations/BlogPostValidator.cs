@@ -54,7 +54,7 @@ namespace MyCourse.Domain.Validation.EntityValidations
 
             RuleFor(x => x.Media.Url)
                 .NotEmpty().WithMessage("Media URL is required.")
-                .Must(BeAValidUrl).WithMessage("Media URL is invalid.")
+                .Must(BeAValidRelativeUrl).WithMessage("Media URL is invalid.")
                 .When(x => x.Media != null);
 
             RuleFor(x => x.Media.MediaType)
@@ -62,10 +62,9 @@ namespace MyCourse.Domain.Validation.EntityValidations
                 .When(x => x.Media != null);
         }
 
-        private bool BeAValidUrl(string url)
+        private bool BeAValidRelativeUrl(string url)
         {
-            return Uri.TryCreate(url, UriKind.Absolute, out Uri? uriResult)
-                   && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
+            return Uri.TryCreate(url, UriKind.Relative, out _);
         }
     }
 
