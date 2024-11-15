@@ -11,7 +11,6 @@ namespace MyCourse.Domain.Entities
     {
 
         public int Order { get; set; }
-        public string? Caption { get; set; }
 
         public int BlogPostId { get; set; }
         [ForeignKey(nameof(BlogPostId))]

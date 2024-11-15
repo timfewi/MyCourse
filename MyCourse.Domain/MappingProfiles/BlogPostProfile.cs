@@ -26,6 +26,12 @@ namespace MyCourse.Domain.MappingProfiles
             CreateMap<BlogPost, BlogPostDetailDto>()
                 .ForMember(dest => dest.Medias, opt => opt.MapFrom(src => src.BlogPostMedias));
 
+
+            CreateMap<BlogPost, BlogPostEditWithImagesDto>()
+     .ForMember(dest => dest.ExistingImages, opt => opt.Ignore())
+     .ForMember(dest => dest.NewImages, opt => opt.Ignore());
+
+
             // Mapping for BlogPostMedia to BlogPostMediaDetailDto
             CreateMap<BlogPostMedia, BlogPostMediaDetailDto>()
                 .ForMember(dest => dest.MediaId, opt => opt.MapFrom(src => src.Media.Id))
@@ -35,7 +41,6 @@ namespace MyCourse.Domain.MappingProfiles
                 .ForMember(dest => dest.ContentType, opt => opt.MapFrom(src => src.Media.ContentType))
                 .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Media.Description))
                 .ForMember(dest => dest.FileSize, opt => opt.MapFrom(src => src.Media.FileSize))
-                .ForMember(dest => dest.Caption, opt => opt.MapFrom(src => src.Caption))
                 .ForMember(dest => dest.Order, opt => opt.MapFrom(src => src.Order));
 
             // Mapping for BlogPostCreateDto to BlogPost

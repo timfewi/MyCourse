@@ -238,7 +238,7 @@ namespace MyCourse.Web.Areas.Admin.Controllers
             }
         }
 
-    
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -246,14 +246,24 @@ namespace MyCourse.Web.Areas.Admin.Controllers
         {
             try
             {
-
+                // Schritt 1: Abrufen der Anwendung
                 var application = await _applicationService.GetApplicationByIdAsync(applicationId);
-                var course = await _courseService.GetCourseByIdAsync(application.CourseId);
                 if (application == null)
                 {
                     throw new Exception($"Anmeldung mit ID {applicationId} nicht gefunden.");
                 }
 
+                // Abrufen des zugehörigen Kurses
+                var course = await _courseService.GetCourseByIdAsync(application.CourseId);
+                if (course == null)
+                {
+                    throw new Exception($"Kurs mit ID {application.CourseId} nicht gefunden.");
+                }
+
+                // Schritt 2: Akzeptieren der Anmeldung
+                await _applicationService.AcceptApplicationAsync(applicationId);
+
+                // Schritt 3: Senden der Bestätigungs-E-Mail
                 var subject = "Ihre Kursanmeldung wurde akzeptiert";
                 var message = $@"
                     <html>
@@ -270,17 +280,20 @@ namespace MyCourse.Web.Areas.Admin.Controllers
                     </html>";
 
                 await _emailService.SendEmailAsync(application.Email, subject, message);
-                await _applicationService.AcceptApplicationAsync(applicationId);
+
+                // Schritt 4: Erfolgsmeldung
                 TempData["SuccessMessage"] = "Die Anmeldung wurde erfolgreich akzeptiert.";
             }
             catch (Exception ex)
             {
+                // Fehlerbehandlung
                 _logger.LogError(ex, "Fehler beim Akzeptieren der Anmeldung {ApplicationId}.", applicationId);
                 TempData["ErrorMessage"] = "Es ist ein Fehler beim Akzeptieren der Anmeldung aufgetreten.";
             }
 
             return RedirectToAction(nameof(Index));
         }
+
 
 
 
@@ -308,16 +321,24 @@ namespace MyCourse.Web.Areas.Admin.Controllers
         {
             try
             {
-                await _applicationService.SetApplicationToWaitingListAsync(applicationId);
-
-                // Holen der Anwendungsdetails
+                // Schritt 1: Abrufen der Anwendung
                 var application = await _applicationService.GetApplicationByIdAsync(applicationId);
-                var course = await _courseService.GetCourseByIdAsync(application.CourseId);
                 if (application == null)
                 {
                     throw new Exception($"Anmeldung mit ID {applicationId} nicht gefunden.");
                 }
 
+                // Abrufen des zugehörigen Kurses
+                var course = await _courseService.GetCourseByIdAsync(application.CourseId);
+                if (course == null)
+                {
+                    throw new Exception($"Kurs mit ID {application.CourseId} nicht gefunden.");
+                }
+
+                // Schritt 2: Setzen der Anmeldung auf die Warteliste
+                await _applicationService.SetApplicationToWaitingListAsync(applicationId);
+
+                // Schritt 3: Senden der Benachrichtigungs-E-Mail
                 var subject = "Ihre Kursanmeldung wurde auf die Warteliste gesetzt";
                 var message = $@"
                     <html>
@@ -336,16 +357,19 @@ namespace MyCourse.Web.Areas.Admin.Controllers
 
                 await _emailService.SendEmailAsync(application.Email, subject, message);
 
+                // Schritt 4: Erfolgsmeldung
                 TempData["SuccessMessage"] = "Die Anmeldung wurde erfolgreich auf die Warteliste gesetzt.";
             }
             catch (Exception ex)
             {
+                // Fehlerbehandlung
                 _logger.LogError(ex, "Fehler beim Setzen der Anmeldung {ApplicationId} auf die Warteliste.", applicationId);
                 TempData["ErrorMessage"] = "Es ist ein Fehler beim Setzen der Anmeldung auf die Warteliste aufgetreten.";
             }
 
             return RedirectToAction(nameof(Index));
         }
+
 
 
         [HttpGet]
@@ -818,7 +842,6 @@ namespace MyCourse.Web.Areas.Admin.Controllers
                                 ContentType = formFile.ContentType,
                                 Description = string.Empty,
                                 FileSize = formFile.Length,
-                                Caption = string.Empty,
                             };
 
                             createDto.Medias.Add(mediaDto);
@@ -870,7 +893,7 @@ namespace MyCourse.Web.Areas.Admin.Controllers
         {
             try
             {
-                var blogPost = await _blogPostService.GetBlogPostDetailAsync(id);
+                var blogPost = await _blogPostService.GetBlogPostEditDetailsWithImagesAsync(id);
                 if (blogPost == null)
                 {
                     TempData["ErrorMessage"] = "Der BlogPost wurd nicht gefunden.";
@@ -879,11 +902,11 @@ namespace MyCourse.Web.Areas.Admin.Controllers
 
                 var viewModel = new BlogPostEditViewModel
                 {
-                    Id = blogPost.Id,
+                    Id = blogPost.BlogPostId,
                     Title = blogPost.Title,
                     Description = blogPost.Description,
                     IsPublished = blogPost.IsPublished,
-                    ExistingImages = blogPost.Medias.Select(m => new ExistingImageViewModel
+                    ExistingImages = blogPost.ExistingImages.Select(m => new ExistingImageViewModel
                     {
                         MediaId = m.MediaId,
                         Url = m.Url,
@@ -902,7 +925,6 @@ namespace MyCourse.Web.Areas.Admin.Controllers
             }
         }
 
-        // POST: Admin/Dashboard/EditBlogPost/{id}
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditBlogPost(BlogPostEditViewModel viewModel)
@@ -912,116 +934,46 @@ namespace MyCourse.Web.Areas.Admin.Controllers
                 return View(viewModel);
             }
 
-            var updateDto = new BlogPostCreateDto
+            var blogPostEditDto = new BlogPostEditWithImagesDto
             {
+                BlogPostId = viewModel.Id,
                 Title = viewModel.Title,
                 Description = viewModel.Description,
                 IsPublished = viewModel.IsPublished,
-                Tags = string.IsNullOrWhiteSpace(viewModel.TagsInput) ? new List<string>() :
-                        viewModel.TagsInput.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                Tags = string.IsNullOrWhiteSpace(viewModel.TagsInput)
+                    ? new List<string>()
+                    : viewModel.TagsInput.Split(',', StringSplitOptions.RemoveEmptyEntries)
                         .Select(tag => tag.Trim()).ToList(),
-                Medias = new List<BlogPostMediaCreateDto>()
+                ExistingImages = viewModel.ExistingImages.Select(ei => new BlogPostImageDto
+                {
+                    MediaId = ei.MediaId,
+                    Url = ei.Url,
+                    ToDelete = ei.ToDelete
+                }).ToList(),
+                NewImages = viewModel.NewImages!
             };
-
-            foreach (var existingImage in viewModel.ExistingImages)
-            {
-                if (!existingImage.ToDelete)
-                {
-                    var mediaDto = new BlogPostMediaCreateDto
-                    {
-                        Url = existingImage.Url,
-                        FileName = Path.GetFileName(existingImage.Url),
-                        MediaType = Domain.Enums.MediaType.Image,
-                        ContentType = string.Empty, // Falls benötigt
-                        Description = string.Empty, // Falls benötigt
-                        FileSize = 0, // Falls benötigt
-                        Caption = string.Empty,
-                    };
-                    updateDto.Medias.Add(mediaDto);
-                }
-            }
-
-            if (viewModel.NewImages != null && viewModel.NewImages.Count > 0)
-            {
-                var permittedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
-                var maxFileSize = 10 * 1024 * 1024;
-
-                foreach (var formFile in viewModel.NewImages)
-                {
-                    try
-                    {
-                        if (formFile.Length > 0 && formFile.Length <= maxFileSize)
-                        {
-                            var extension = Path.GetExtension(formFile.FileName).ToLowerInvariant();
-
-                            if (string.IsNullOrEmpty(extension) || !permittedExtensions.Contains(extension))
-                            {
-                                ModelState.AddModelError("Images", $"Die Datei {formFile.FileName} hat ein ungültiges Datei-Format.");
-                                continue;
-                            }
-
-                            var fileName = Path.GetFileNameWithoutExtension(formFile.FileName);
-                            fileName = SanitizeFileName(fileName);
-
-                            var newFileName = $"{fileName}_{DateTime.Now.Ticks}{extension}";
-                            var uploadsFolder = Path.Combine(_hostingEnvironment.WebRootPath, "uploads", "images");
-
-                            if (!Directory.Exists(uploadsFolder))
-                            {
-                                Directory.CreateDirectory(uploadsFolder);
-                            }
-
-                            var filePath = Path.Combine(uploadsFolder, newFileName);
-
-                            using (var stream = new FileStream(filePath, FileMode.Create))
-                            {
-                                await formFile.CopyToAsync(stream);
-                            }
-
-                            var mediaDto = new BlogPostMediaCreateDto
-                            {
-                                Url = $"/uploads/images/{newFileName}",
-                                FileName = newFileName,
-                                MediaType = Domain.Enums.MediaType.Image,
-                                ContentType = formFile.ContentType,
-                                Description = string.Empty,
-                                FileSize = formFile.Length,
-                                Caption = string.Empty,
-                            };
-
-                            updateDto.Medias.Add(mediaDto);
-                        }
-                        else
-                        {
-                            ModelState.AddModelError("Images", $"Die Datei {formFile.FileName} ist zu groß oder leer.");
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Fehler beim Verarbeiten der Datei {FileName}.", formFile.FileName);
-                        ModelState.AddModelError("Images", ex.Message);
-                    }
-                }
-            }
-
-            if (!ModelState.IsValid)
-            {
-                return View(viewModel);
-            }
 
             try
             {
-                await _blogPostService.UpdateBlogPostAsync(viewModel.Id, updateDto);
+                await _blogPostService.UpdateBlogPostWithImagesAsync(blogPostEditDto);
+
                 TempData["SuccessMessage"] = "Der BlogPost wurde erfolgreich aktualisiert.";
+                _logger.LogInformation("BlogPost mit ID {BlogPostId} wurde erfolgreich aktualisiert.", viewModel.Id);
+            }
+            catch (BlogPostNotFoundException)
+            {
+                _logger.LogWarning("BlogPost mit ID {BlogPostId} wurde nicht gefunden.", viewModel.Id);
+                TempData["ErrorMessage"] = "Der angeforderte BlogPost wurde nicht gefunden.";
                 return RedirectToAction(nameof(ManageBlogPosts));
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Fehler beim Aktualisieren des BlogPosts mit ID {Id}.", viewModel.Id);
-                ModelState.AddModelError(string.Empty, "Es ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.");
-                return View(viewModel);
+                _logger.LogError(ex, "Fehler beim Aktualisieren des BlogPosts mit ID {BlogPostId}.", viewModel.Id);
+                TempData["ErrorMessage"] = "Es ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.";
+                return RedirectToAction(nameof(ManageBlogPosts));
             }
 
+            return RedirectToAction(nameof(ManageBlogPosts));
         }
 
 
@@ -1101,5 +1053,22 @@ namespace MyCourse.Web.Areas.Admin.Controllers
         {
             return string.Concat(fileName.Split(Path.GetInvalidFileNameChars()));
         }
+
+        private string GetContentTypeByExtension(string extension)
+        {
+            switch (extension)
+            {
+                case ".jpg":
+                case ".jpeg":
+                    return "image/jpeg";
+                case ".png":
+                    return "image/png";
+                case ".gif":
+                    return "image/gif";
+                default:
+                    return "application/octet-stream";
+            }
+        }
+
     }
 }

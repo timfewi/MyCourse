@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using FluentValidation;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MyCourse.Domain.Attributes;
@@ -8,11 +9,13 @@ using MyCourse.Domain.Data;
 using MyCourse.Domain.Data.Interfaces.Repositories;
 using MyCourse.Domain.Data.Interfaces.Services;
 using MyCourse.Domain.Data.Repositories.CourseRepositories;
+using MyCourse.Domain.Data.Repositories.MediaRepositories;
 using MyCourse.Domain.DTOs.BlogPostDtos;
 using MyCourse.Domain.DTOs.BlogPostDtos.BlogPostMediaDtos;
 using MyCourse.Domain.DTOs.MediaDtos;
 using MyCourse.Domain.Entities;
 using MyCourse.Domain.Exceptions.BlogPostEx;
+using MyCourse.Domain.Exceptions.MediaEx;
 using MyCourse.Domain.Services.MediaServices;
 using System;
 using System.Collections.Generic;
@@ -30,6 +33,7 @@ namespace MyCourse.Domain.Services.BlogPostServices
         private readonly AppDbContext _dbContext;
         private readonly IBlogPostRepository _blogPostRepository;
         private readonly IMediaService _mediaService;
+        private readonly IMediaRepository _mediaRepository;
         private readonly IMapper _mapper;
         private readonly ILogger<BlogPostService> _logger;
         private readonly IValidator<BlogPostCreateDto> _createDtoValidator;
@@ -39,6 +43,7 @@ namespace MyCourse.Domain.Services.BlogPostServices
             AppDbContext dbContext,
             IBlogPostRepository blogPostRepository,
             IMediaService mediaService,
+            IMediaRepository mediaRepository,
             IMapper mapper,
             ILogger<BlogPostService> logger,
             IValidator<BlogPostCreateDto> createDtoValidator,
@@ -48,6 +53,7 @@ namespace MyCourse.Domain.Services.BlogPostServices
             _dbContext = dbContext;
             _blogPostRepository = blogPostRepository;
             _mediaService = mediaService;
+            _mediaRepository = mediaRepository;
             _mapper = mapper;
             _logger = logger;
             _createDtoValidator = createDtoValidator;
@@ -87,7 +93,7 @@ namespace MyCourse.Domain.Services.BlogPostServices
         public async Task<BlogPostDetailDto> GetBlogPostDetailAsync(int id)
         {
             var blogPost = await _blogPostRepository.GetBlogPostByIdAsync(id);
-            if (blogPost == null || !blogPost.IsPublished)
+            if (blogPost == null)
             {
                 throw new BlogPostNotFoundException(id);
             }
@@ -95,6 +101,27 @@ namespace MyCourse.Domain.Services.BlogPostServices
             return _mapper.Map<BlogPostDetailDto>(blogPost);
         }
 
+        public async Task<BlogPostEditWithImagesDto> GetBlogPostEditDetailsWithImagesAsync(int blogPostId)
+        {
+            var blogPost = await _blogPostRepository.GetByIdAsync(blogPostId);
+            if (blogPost == null)
+            {
+                _logger.LogWarning("BlogPost with ID {BlogPostId} not found.", blogPostId);
+                throw new BlogPostNotFoundException(blogPostId);
+            }
+            await _blogPostRepository.LoadBlogPostMediasAsync(blogPost);
+            var dto = _mapper.Map<BlogPostEditWithImagesDto>(blogPost);
+
+            dto.NewImages = new List<IFormFile>();
+            dto.ExistingImages = blogPost.BlogPostMedias.Select(bpm => new BlogPostImageDto
+            {
+                MediaId = bpm.MediaId,
+                Url = bpm.Media.Url,
+                ToDelete = false
+            }).ToList();
+
+            return dto;
+        }
 
         /// <summary>
         /// Erstellt einen neuen BlogPost.
@@ -103,9 +130,12 @@ namespace MyCourse.Domain.Services.BlogPostServices
         /// <returns>BlogPostDetailDto des erstellten BlogPosts</returns>
         /// <exception cref="BlogPostDuplicateTitleException">Wenn ein BlogPost mit dem gleichen Titel bereits existiert.</exception>
         /// <exception cref="BlogPostValidationException">Wenn die Validierung fehlschlägt.</exception>
+        /// <exception cref="BlogPostInvalidOperationException">Wenn das Mapping fehlschlägt.</exception>
         /// <exception cref="BlogPostDatabaseException">Wenn ein Datenbankfehler auftritt.</exception>
         public async Task<BlogPostDetailDto> CreateBlogPostAsync(BlogPostCreateDto createDto)
         {
+
+
             // Starten einer neuen Transaktion
             using var transaction = await _dbContext.Database.BeginTransactionAsync();
             try
@@ -127,6 +157,11 @@ namespace MyCourse.Domain.Services.BlogPostServices
 
                 // Mappen des DTOs auf die Entity
                 var blogPost = _mapper.Map<BlogPost>(createDto);
+                if (blogPost == null)
+                {
+                    _logger.LogError("Mapping from BlogPostCreateDto to BlogPost failed");
+                    throw new BlogPostInvalidOperationException("Mapping from BlogPostCreateDto to Entity Failed");
+                }
 
                 // Hinzufügen der zugehörigen Medien über MediaService
                 foreach (var mediaDto in createDto.Medias)
@@ -141,12 +176,10 @@ namespace MyCourse.Domain.Services.BlogPostServices
                     {
                         MediaId = mediaId,
                         Order = blogPost.BlogPostMedias.Count + 1,
-                        Caption = mediaDto.Caption
                     };
 
                     blogPost.BlogPostMedias.Add(blogPostMedia);
                 }
-
                 // Hinzufügen des BlogPosts
                 await _blogPostRepository.AddAsync(blogPost);
 
@@ -173,129 +206,141 @@ namespace MyCourse.Domain.Services.BlogPostServices
 
 
         /// <summary>
-        /// Aktualisiert einen bestehenden BlogPost.
+        /// Aktualisiert einen bestehenden BlogPost einschließlich seiner Medien (Bilder) und Tags.
         /// </summary>
-        /// <param name="id">ID des BlogPosts</param>
-        /// <param name="updateDto">Aktualisierte Daten des BlogPosts</param>
-        /// <returns>BlogPostDetailDto des aktualisierten BlogPosts</returns>
-        /// <exception cref="BlogPostNotFoundException">Wenn der BlogPost nicht gefunden wird.</exception>
-        /// <exception cref="BlogPostDuplicateTitleException">Wenn ein BlogPost mit dem gleichen Titel bereits existiert.</exception>
-        /// <exception cref="BlogPostValidationException">Wenn die Validierung fehlschlägt.</exception>
-        /// <exception cref="BlogPostDatabaseException">Wenn ein Datenbankfehler auftritt.</exception>
-        public async Task<BlogPostDetailDto> UpdateBlogPostAsync(int id, BlogPostCreateDto updateDto)
+        /// <param name="blogPostDto">Das DTO mit den aktualisierten Daten des BlogPosts.</param>
+        /// <exception cref="BlogPostNotFoundException">
+        /// Wird ausgelöst, wenn kein BlogPost mit der angegebenen ID gefunden wird.
+        /// </exception>
+        /// <exception cref="BlogPostUpdateException">
+        /// Wird ausgelöst, wenn beim Aktualisieren des BlogPosts ein Fehler auftritt.
+        /// </exception>
+        /// <exception cref="BlogPostDatabaseException">
+        /// Wird ausgelöst, wenn beim Speichern des BlogPosts in der Datenbank ein Fehler auftritt.
+        /// </exception>
+        public async Task UpdateBlogPostWithImagesAsync(BlogPostEditWithImagesDto blogPostDto)
         {
-            var blogPost = await _blogPostRepository.GetByIdAsync(id);
-            if (blogPost == null)
-            {
-                _logger.LogWarning("BlogPost not Found with ID: {id}", id);
-                throw new BlogPostNotFoundException(id);
-            }
-            // Starten einer neuen Transaktion
             using var transaction = await _dbContext.Database.BeginTransactionAsync();
             try
             {
-                // Validierung des UpdateDto
-                var validationResult = await _createDtoValidator.ValidateAsync(updateDto);
-                if (!validationResult.IsValid)
+                var blogPost = await _blogPostRepository.GetByIdAsync(blogPostDto.BlogPostId);
+                if (blogPost == null)
                 {
-                    var errors = validationResult.Errors.Select(e => new { e.PropertyName, e.ErrorMessage });
-                    throw new BlogPostValidationException("Validation failed.", id, errors);
+                    _logger.LogWarning("BlogPost mit ID {BlogPostId} nicht gefunden.", blogPostDto.BlogPostId);
+                    throw new BlogPostNotFoundException(blogPostDto.BlogPostId);
+                }
+                await _blogPostRepository.LoadBlogPostMediasAsync(blogPost);
+
+                // BlogPost-Eigenschaften aktualisieren
+                blogPost.Title = blogPostDto.Title;
+                blogPost.Description = blogPostDto.Description;
+                blogPost.IsPublished = blogPostDto.IsPublished;
+
+                // Tags aktualisieren (falls erforderlich)
+                if (blogPostDto.Tags != null)
+                {
+                    // Annahme: Es gibt eine Methode zum Aktualisieren der Tags
+                    await _blogPostRepository.UpdateTagsAsync(blogPost, blogPostDto.Tags);
                 }
 
-                // Prüfen auf doppelten Titel, falls der Titel geändert wurde
-                if (!string.Equals(blogPost.Title, updateDto.Title, StringComparison.OrdinalIgnoreCase))
+                // Vorhandene Bilder behandeln
+                if (blogPostDto.ExistingImages != null && blogPostDto.ExistingImages.Any())
                 {
-                    var existingPost = await _blogPostRepository.GetBlogPostByTitleAsync(updateDto.Title);
-                    if (existingPost != null && existingPost.Id != id)
+                    var imagesToDelete = blogPostDto.ExistingImages
+                        .Where(ei => ei.ToDelete)
+                        .Select(ei => ei.MediaId)
+                        .ToList();
+
+                    if (imagesToDelete.Any())
                     {
-                        throw new BlogPostDuplicateTitleException(updateDto.Title, id);
-                    }
-                }
+                        var mediasToDelete = blogPost.BlogPostMedias
+                            .Where(bpm => imagesToDelete.Contains(bpm.MediaId))
+                            .Select(bpm => bpm.Media)
+                            .ToList();
 
-                // Mappen der aktualisierten Daten auf die Entity
-                _mapper.Map(updateDto, blogPost);
-
-                // Verwalten der Medien:
-                // 1. Ermitteln der bestehenden Medien
-                var existingBlogPostMedias = blogPost.BlogPostMedias.ToList();
-
-                // 2. Ermitteln der neuen Medien aus dem updateDto
-                var updatedMediaDtos = updateDto.Medias;
-
-                // 3. Ermitteln der Medien, die gelöscht werden müssen (basierend auf URL)
-                var mediasToDelete = existingBlogPostMedias
-                    .Where(existingMedia => !updatedMediaDtos.Any(u => string.Equals(u.Url, existingMedia.Media.Url, StringComparison.OrdinalIgnoreCase)))
-                    .ToList();
-
-                // 4. Löschen der nicht mehr benötigten Medien über MediaService
-                foreach (var mediaToDelete in mediasToDelete)
-                {
-                    blogPost.BlogPostMedias.Remove(mediaToDelete);
-                    await _mediaService.DeleteMediaAsync(mediaToDelete.MediaId);
-                }
-
-                // 5. Hinzufügen oder Aktualisieren der Medien
-                foreach (var mediaDto in updatedMediaDtos)
-                {
-                    // Prüfen, ob das Media bereits existiert (basierend auf URL)
-                    var existingMedia = existingBlogPostMedias.FirstOrDefault(m => string.Equals(m.Media.Url, mediaDto.Url, StringComparison.OrdinalIgnoreCase));
-
-                    if (existingMedia != null)
-                    {
-                        // Mappe BlogPostMediaCreateDto zu MediaCreateDto
-                        var mediaUpdateDto = _mapper.Map<MediaCreateDto>(mediaDto);
-
-                        // Aktualisiere das Medium über MediaService
-                        await _mediaService.UpdateMediaAsync(existingMedia.MediaId, mediaUpdateDto);
-
-                        existingMedia.Caption = mediaDto.Caption;
-                    }
-                    else
-                    {
-                        // Mappe BlogPostMediaCreateDto zu MediaCreateDto
-                        var mediaCreateDto = _mapper.Map<MediaCreateDto>(mediaDto);
-
-                        // Erstelle das Medium und erhalte die MediaId
-                        var mediaId = await _mediaService.CreateMediaAsync(mediaCreateDto);
-
-                        var blogPostMedia = new BlogPostMedia
+                        foreach (var media in mediasToDelete)
                         {
-                            MediaId = mediaId, // Verwende die zurückgegebene MediaId direkt
-                            Order = blogPost.BlogPostMedias.Count + 1,
-                            Caption = mediaDto.Caption
-                        };
-
-                        blogPost.BlogPostMedias.Add(blogPostMedia);
+                            if (media != null)
+                            {
+                                try
+                                {
+                                    _mediaRepository.DeleteImage(media);
+                                    var blogPostMedia = blogPost.BlogPostMedias.FirstOrDefault(bpm => bpm.MediaId == media.Id);
+                                    if (blogPostMedia != null)
+                                    {
+                                        _mediaRepository.RemoveBlogPostMedia(blogPostMedia);
+                                    }
+                                    else
+                                    {
+                                        _logger.LogWarning("No BlogPostMedia found for MediaId {MediaId}.", media.Id);
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    _logger.LogError(ex, "Fehler beim Löschen des Mediums mit ID {MediaId} während der Aktualisierung des BlogPosts.", media.Id);
+                                    throw new BlogPostUpdateException("Fehler beim Löschen des Mediums während der Aktualisierung des BlogPosts.", blogPost.Id, ex);
+                                }
+                            }
+                        }
                     }
                 }
 
-                // Aktualisieren des BlogPosts
+                // Neue Bilder hinzufügen
+                if (blogPostDto.NewImages != null && blogPostDto.NewImages.Any())
+                {
+                    foreach (var image in blogPostDto.NewImages)
+                    {
+                        if (image != null && image.Length > 0)
+                        {
+                            try
+                            {
+                                // Bild speichern und Media-Entity erhalten
+                                var media = await _mediaRepository.SaveImageAsync(image, blogPost.Id);
+
+                                // Medium zum BlogPost hinzufügen
+                                await _mediaRepository.AddBlogPostMediaAsync(blogPost.Id, media.Id);
+                            }
+                            catch (MediaException ex)
+                            {
+                                _logger.LogError(ex, "Fehler beim Hinzufügen eines neuen Bildes zum BlogPost mit ID {BlogPostId}.", blogPost.Id);
+                                throw;
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError(ex, "Unerwarteter Fehler beim Hinzufügen eines neuen Bildes zum BlogPost mit ID {BlogPostId}.", blogPost.Id);
+                                throw new BlogPostUpdateException("Fehler beim Hinzufügen neuer Bilder zum BlogPost.", blogPost.Id, ex);
+                            }
+                        }
+                    }
+                }
+
                 _blogPostRepository.Update(blogPost);
 
-                // Speichern der Änderungen
-                await _dbContext.SaveChangesAsync();
-
-                // Commit der Transaktion
-                await transaction.CommitAsync();
-
-                return _mapper.Map<BlogPostDetailDto>(blogPost);
-            }
-            catch (BlogPostNotFoundException)
-            {
-                await transaction.RollbackAsync();
-                throw;
+                try
+                {
+                    await _blogPostRepository.SaveChangesAsync();
+                    await transaction.CommitAsync();
+                    _logger.LogInformation("BlogPost mit ID {BlogPostId} erfolgreich aktualisiert.", blogPost.Id);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Fehler beim Speichern des BlogPosts mit ID {BlogPostId}.", blogPost.Id);
+                    throw new BlogPostDatabaseException("Fehler beim Speichern des BlogPosts.", blogPost.Id, ex);
+                }
             }
             catch (Exception ex)
             {
+                // Rollback der Transaktion bei Fehlern
                 await transaction.RollbackAsync();
-                _logger.LogError(ex, $"Fehler beim Aktualisieren des BlogPosts mit ID {id}.");
-                if (ex is BlogPostValidationException || ex is BlogPostDuplicateTitleException)
+                _logger.LogError(ex, "Fehler beim Updaten des neuen BlogPosts.");
+                if (ex is BlogPostValidationException || ex is BlogPostDuplicateTitleException || ex is BlogPostUpdateException)
                 {
                     throw;
                 }
-                throw new BlogPostDatabaseException("Failed to update the blog post.", id, ex.Message);
+                throw new BlogPostDatabaseException("Failed to save the new blog post.", null, ex.Message);
             }
         }
+
 
         /// <summary>
         /// Löscht einen bestehenden BlogPost.
@@ -315,7 +360,7 @@ namespace MyCourse.Domain.Services.BlogPostServices
 
             try
             {
-                foreach(var blogPostMedia in blogPost.BlogPostMedias.ToList())
+                foreach (var blogPostMedia in blogPost.BlogPostMedias.ToList())
                 {
                     _blogPostRepository.RemoveBlogPostMedia(blogPostMedia);
                     await _mediaService.DeleteMediaAsync(blogPostMedia.MediaId);

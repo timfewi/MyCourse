@@ -2,6 +2,7 @@
 using FluentAssertions;
 using FluentValidation;
 using FluentValidation.Results;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -18,6 +19,7 @@ using MyCourse.Domain.Services.BlogPostServices;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 using static MyCourse.Domain.Exceptions.BlogPostEx.BlogPostExceptions;
@@ -28,6 +30,7 @@ namespace MyCourse.Domain.Tests.Services
     {
         private readonly Mock<IBlogPostRepository> _blogPostRepoMock;
         private readonly Mock<IMediaService> _mediaServiceMock;
+        private readonly Mock<IMediaRepository> _mediaRepositoryMock;
         private readonly Mock<IValidator<BlogPostCreateDto>> _createDtoValidatorMock;
         private readonly Mock<IValidator<BlogPostMediaCreateDto>> _createMediaDtoValidatorMock;
         private readonly Mock<IMapper> _mapperMock;
@@ -41,6 +44,7 @@ namespace MyCourse.Domain.Tests.Services
             // Erstellen der Mock-Objekte
             _blogPostRepoMock = new Mock<IBlogPostRepository>();
             _mediaServiceMock = new Mock<IMediaService>();
+            _mediaRepositoryMock = new Mock<IMediaRepository>();
             _createDtoValidatorMock = new Mock<IValidator<BlogPostCreateDto>>();
             _createMediaDtoValidatorMock = new Mock<IValidator<BlogPostMediaCreateDto>>();
             _mapperMock = new Mock<IMapper>();
@@ -62,6 +66,7 @@ namespace MyCourse.Domain.Tests.Services
                 _context,
                 _blogPostRepoMock.Object,
                 _mediaServiceMock.Object,
+                _mediaRepositoryMock.Object,
                 _mapperMock.Object,
                 _loggerMock.Object,
                 _createDtoValidatorMock.Object,
@@ -91,7 +96,6 @@ namespace MyCourse.Domain.Tests.Services
                         ContentType = "image/jpeg",
                         Description = "Image 1",
                         FileSize = 1024,
-                        Caption = "Caption 1"
                     }
                 }
             };
@@ -262,7 +266,6 @@ namespace MyCourse.Domain.Tests.Services
                     new BlogPostMedia
                     {
                         MediaId = 1,
-                        Caption = "Caption 1",
                         Media = new Media
                         {
                             Id = 1,
@@ -299,7 +302,6 @@ namespace MyCourse.Domain.Tests.Services
                         ContentType = "image/jpeg",
                         Description = "Image 1",
                         FileSize = 1024,
-                        Caption = "Caption 1",
                         Order = 1
                     }
                 }
@@ -349,237 +351,234 @@ namespace MyCourse.Domain.Tests.Services
         #region UpdateBlogPostAsync Tests
 
         [Fact]
-        public async Task UpdateBlogPostAsync_ValidInput_UpdatesBlogPost()
+        public async Task UpdateBlogPostWithImagesAsync_ValidInput_UpdatesBlogPost()
         {
             // Arrange
             int blogPostId = 1;
-            var updateDto = new BlogPostCreateDto
+            var updateDto = new BlogPostEditWithImagesDto
             {
+                BlogPostId = blogPostId,
                 Title = "Updated Blog Post",
                 Description = "Updated description",
                 Tags = new List<string> { "UpdatedTag" },
                 IsPublished = true,
-                Medias = new List<BlogPostMediaCreateDto>
-                {
-                    new BlogPostMediaCreateDto
-                    {
-                        Url = "http://example.com/image2.jpg",
-                        FileName = "image2.jpg",
-                        MediaType = MediaType.Image,
-                        ContentType = "image/jpeg",
-                        Description = "Image 2",
-                        FileSize = 2048,
-                        Caption = "Caption 2"
-                    }
-                }
+                ExistingImages = new List<BlogPostImageDto>
+        {
+            new BlogPostImageDto
+            {
+                MediaId = 1,
+                Url = "http://example.com/image1.jpg",
+                ToDelete = false
+            },
+            new BlogPostImageDto
+            {
+                MediaId = 2,
+                Url = "http://example.com/image2.jpg",
+                ToDelete = true
+            }
+        },
+                NewImages = new List<IFormFile>
+        {
+            GetMockFormFile("image3.jpg"),
+        }
             };
 
             var existingBlogPost = new BlogPost
             {
                 Id = blogPostId,
-                Title = "Test Blog Post",
-                Description = "Detailed description",
-                IsPublished = true,
+                Title = "Original Blog Post",
+                Description = "Original description",
+                IsPublished = false,
                 BlogPostMedias = new List<BlogPostMedia>
+        {
+            new BlogPostMedia
+            {
+                MediaId = 1,
+                Media = new Media
                 {
-                    new BlogPostMedia
-                    {
-                        MediaId = 1,
-                        Caption = "Caption 1",
-                        Media = new Media
-                        {
-                            Id = 1,
-                            Url = "http://example.com/image1.jpg",
-                            FileName = "image1.jpg",
-                            MediaType = MediaType.Image,
-                            ContentType = "image/jpeg",
-                            Description = "Image 1",
-                            FileSize = 1024
-                        },
-                        Order = 1
-                    }
-                }
+                    Id = 1,
+                    Url = "http://example.com/image1.jpg",
+                    FileName = "image1.jpg",
+                    MediaType = MediaType.Image,
+                    ContentType = "image/jpeg",
+                    Description = "Image 1",
+                    FileSize = 1024
+                },
+                Order = 1
+            },
+            new BlogPostMedia
+            {
+                MediaId = 2,
+                Media = new Media
+                {
+                    Id = 2,
+                    Url = "http://example.com/image2.jpg",
+                    FileName = "image2.jpg",
+                    MediaType = MediaType.Image,
+                    ContentType = "image/jpeg",
+                    Description = "Image 2",
+                    FileSize = 2048
+                },
+                Order = 2
+            }
+        }
             };
 
             _blogPostRepoMock.Setup(repo => repo.GetByIdAsync(blogPostId))
                 .ReturnsAsync(existingBlogPost);
 
-            // Setup Validator: Validierung besteht
-            _createDtoValidatorMock.Setup(v => v.ValidateAsync(updateDto, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new ValidationResult());
+            _blogPostRepoMock.Setup(repo => repo.LoadBlogPostMediasAsync(existingBlogPost))
+                .Returns(Task.CompletedTask);
 
-            // Prüfen auf doppelten Titel
-            _blogPostRepoMock.Setup(repo => repo.GetBlogPostByTitleAsync("Updated Blog Post"))
-                .ReturnsAsync((BlogPost)null!);
+            _blogPostRepoMock.Setup(repo => repo.UpdateTagsAsync(existingBlogPost, updateDto.Tags))
+                .Returns(Task.CompletedTask);
 
-            // Setup Mapping: Map BlogPostCreateDto zu BlogPost
-            _mapperMock.Setup(m => m.Map(updateDto, existingBlogPost))
-                .Callback<BlogPostCreateDto, BlogPost>((dto, bp) =>
+            _mediaRepositoryMock.Setup(mr => mr.DeleteImage(It.IsAny<Media>()))
+             .Callback<Media>(media =>
+             {
+                 // Simulieren Sie das Löschen der Datei
+             });
+
+            _mediaRepositoryMock.Setup(mr => mr.RemoveBlogPostMedia(It.IsAny<BlogPostMedia>()))
+                .Callback<BlogPostMedia>(bpm => existingBlogPost.BlogPostMedias.Remove(bpm));
+
+            _mediaRepositoryMock.Setup(mr => mr.SaveImageAsync(It.IsAny<IFormFile>(), blogPostId))
+                .ReturnsAsync(new Media { Id = 3, Url = "http://example.com/image3.jpg" });
+
+            _mediaRepositoryMock.Setup(mr => mr.AddBlogPostMediaAsync(blogPostId, 3))
+                .Returns(Task.CompletedTask)
+                .Callback<int, int>((bpId, mediaId) =>
                 {
-                    bp.Title = dto.Title;
-                    bp.Description = dto.Description;
-                    bp.Tags = dto.Tags;
-                    bp.IsPublished = dto.IsPublished;
-                    // Medien werden separat gehandhabt
+                    existingBlogPost.BlogPostMedias.Add(new BlogPostMedia
+                    {
+                        MediaId = mediaId,
+                        Media = new Media { Id = mediaId },
+                        Order = existingBlogPost.BlogPostMedias.Count + 1
+                    });
                 });
 
-            // Setup MediaService: Erstelle Media und gebe MediaId zurück
-            _mapperMock.Setup(m => m.Map<MediaCreateDto>(It.IsAny<BlogPostMediaCreateDto>()))
-                .Returns((BlogPostMediaCreateDto mediaDto) => new MediaCreateDto
-                {
-                    Url = mediaDto.Url,
-                    FileName = mediaDto.FileName,
-                    MediaType = mediaDto.MediaType,
-                    ContentType = mediaDto.ContentType,
-                    Description = mediaDto.Description,
-                    FileSize = mediaDto.FileSize
-                });
+            _blogPostRepoMock.Setup(repo => repo.Update(existingBlogPost))
+                .Verifiable();
 
-            _mediaServiceMock.Setup(m => m.CreateMediaAsync(It.IsAny<MediaCreateDto>()))
-                .ReturnsAsync(2); // MediaId = 2
-
-            // Setup Mapping: Map BlogPost to BlogPostDetailDto
-            var blogPostDetailDto = new BlogPostDetailDto
-            {
-                Id = blogPostId,
-                Title = "Updated Blog Post",
-                Description = "Updated description",
-                Tags = new List<string> { "UpdatedTag" },
-                IsPublished = true,
-                Medias = new List<BlogPostMediaDetailDto>
-                {
-                    new BlogPostMediaDetailDto
-                    {
-                        MediaId = 1,
-                        Url = "http://example.com/image1.jpg",
-                        FileName = "image1.jpg",
-                        MediaType = MediaType.Image,
-                        ContentType = "image/jpeg",
-                        Description = "Image 1",
-                        FileSize = 1024,
-                        Caption = "Caption 1",
-                        Order = 1
-                    },
-                    new BlogPostMediaDetailDto
-                    {
-                        MediaId = 2,
-                        Url = "http://example.com/image2.jpg",
-                        FileName = "image2.jpg",
-                        MediaType = MediaType.Image,
-                        ContentType = "image/jpeg",
-                        Description = "Image 2",
-                        FileSize = 2048,
-                        Caption = "Caption 2",
-                        Order = 2
-                    }
-                }
-            };
-
-            _mapperMock.Setup(m => m.Map<BlogPostDetailDto>(existingBlogPost))
-                .Returns(blogPostDetailDto);
+            _blogPostRepoMock.Setup(repo => repo.SaveChangesAsync())
+                .Returns(Task.CompletedTask);
 
             // Act
-            var result = await _service.UpdateBlogPostAsync(blogPostId, updateDto);
+            await _service.UpdateBlogPostWithImagesAsync(updateDto);
 
             // Assert
-            result.Should().NotBeNull();
-            result.Title.Should().Be("Updated Blog Post");
-            result.Description.Should().Be("Updated description");
-            result.Medias.Should().HaveCount(2);
-            result.Medias.Last().MediaId.Should().Be(2);
+            // Überprüfen der aktualisierten Eigenschaften
+            existingBlogPost.Title.Should().Be(updateDto.Title);
+            existingBlogPost.Description.Should().Be(updateDto.Description);
+            existingBlogPost.IsPublished.Should().Be(updateDto.IsPublished);
 
-            _createDtoValidatorMock.Verify(v => v.ValidateAsync(updateDto, It.IsAny<CancellationToken>()), Times.Once);
-            _blogPostRepoMock.Verify(repo => repo.GetBlogPostByTitleAsync("Updated Blog Post"), Times.Once);
-            _mapperMock.Verify(m => m.Map(updateDto, existingBlogPost), Times.Once);
-            _mapperMock.Verify(m => m.Map<MediaCreateDto>(It.IsAny<BlogPostMediaCreateDto>()), Times.Once);
-            _mediaServiceMock.Verify(m => m.CreateMediaAsync(It.IsAny<MediaCreateDto>()), Times.Once);
+            // Überprüfen, dass das Tag-Update aufgerufen wurde
+            _blogPostRepoMock.Verify(repo => repo.UpdateTagsAsync(existingBlogPost, updateDto.Tags), Times.Once);
+
+            // Überprüfen, dass das zu löschende Bild entfernt wurde
+            _mediaRepositoryMock.Verify(mr => mr.DeleteImage(It.Is<Media>(m => m.Id == 2)), Times.Once);
+            _mediaRepositoryMock.Verify(mr => mr.RemoveBlogPostMedia(It.Is<BlogPostMedia>(bpm => bpm.MediaId == 2)), Times.Once);
+
+            existingBlogPost.BlogPostMedias.Should().NotContain(bpm => bpm.MediaId == 2);
+
+            // Überprüfen, dass das neue Bild hinzugefügt wurde
+            _mediaRepositoryMock.Verify(mr => mr.SaveImageAsync(It.IsAny<IFormFile>(), blogPostId), Times.Once);
+            _mediaRepositoryMock.Verify(mr => mr.AddBlogPostMediaAsync(blogPostId, 3), Times.Once);
+
+            existingBlogPost.BlogPostMedias.Should().Contain(bpm => bpm.MediaId == 3);
+
+            // Überprüfen, dass Update und SaveChanges aufgerufen wurden
             _blogPostRepoMock.Verify(repo => repo.Update(existingBlogPost), Times.Once);
-            _context.SaveChangesAsync().GetAwaiter();
-            _mapperMock.Verify(m => m.Map<BlogPostDetailDto>(existingBlogPost), Times.Once);
+            _blogPostRepoMock.Verify(repo => repo.SaveChangesAsync(), Times.Once);
+        }
+        private IFormFile GetMockFormFile(string fileName)
+        {
+            var stream = new MemoryStream(Encoding.UTF8.GetBytes("Dummy file content"));
+            return new FormFile(stream, 0, stream.Length, "file", fileName)
+            {
+                Headers = new HeaderDictionary(),
+                ContentType = "image/jpeg"
+            };
         }
 
+
         [Fact]
-        public async Task UpdateBlogPostAsync_NonExistingId_ThrowsBlogPostNotFoundException()
+        public async Task UpdateBlogPostWithImagesAsync_ErrorDeletingMedia_ThrowsBlogPostUpdateException()
         {
             // Arrange
-            int blogPostId = 99;
-            var updateDto = new BlogPostCreateDto
+            int blogPostId = 1;
+            var updateDto = new BlogPostEditWithImagesDto
             {
+                BlogPostId = blogPostId,
                 Title = "Updated Blog Post",
                 Description = "Updated description",
                 Tags = new List<string> { "UpdatedTag" },
                 IsPublished = true,
-                Medias = new List<BlogPostMediaCreateDto>()
-            };
-
-            _blogPostRepoMock.Setup(repo => repo.GetByIdAsync(blogPostId))
-                .ReturnsAsync((BlogPost)null!);
-
-            // Act & Assert
-            Func<Task> act = async () => await _service.UpdateBlogPostAsync(blogPostId, updateDto);
-
-            var exception = await Assert.ThrowsAsync<BlogPostNotFoundException>(act);
-            exception.ErrorCode.Should().Be(BlogPostErrorCode.NotFound);
-            exception.Message.Should().Be($"BlogPost with ID {blogPostId} not found.");
-            exception.BlogPostId.Should().Be(blogPostId);
-
-            _blogPostRepoMock.Verify(repo => repo.GetByIdAsync(blogPostId), Times.Once);
-            _createDtoValidatorMock.Verify(v => v.ValidateAsync(It.IsAny<BlogPostCreateDto>(), It.IsAny<CancellationToken>()), Times.Never);
-            _mediaServiceMock.Verify(m => m.CreateMediaAsync(It.IsAny<MediaCreateDto>()), Times.Never);
-            _mapperMock.Verify(m => m.Map<BlogPostDetailDto>(It.IsAny<BlogPost>()), Times.Never);
-        }
-
-        [Fact]
-        public async Task UpdateBlogPostAsync_DuplicateTitle_ThrowsException()
+                ExistingImages = new List<BlogPostImageDto>
         {
-            // Arrange
-            int blogPostId = 1;
-            var updateDto = new BlogPostCreateDto
+            new BlogPostImageDto
             {
-                Title = "Existing Blog Post",
-                Description = "Updated description",
-                Tags = new List<string> { "UpdatedTag" },
-                IsPublished = true,
-                Medias = new List<BlogPostMediaCreateDto>()
+                MediaId = 2,
+                Url = "http://example.com/image2.jpg",
+                ToDelete = true
+            }
+        },
+                NewImages = new List<IFormFile>()
             };
 
             var existingBlogPost = new BlogPost
             {
                 Id = blogPostId,
-                Title = "Test Blog Post",
-                Description = "Detailed description",
-                IsPublished = true,
-                BlogPostMedias = new List<BlogPostMedia>()
-            };
-
-            var anotherBlogPost = new BlogPost
+                Title = "Original Blog Post",
+                Description = "Original description",
+                IsPublished = false,
+                BlogPostMedias = new List<BlogPostMedia>
+        {
+            new BlogPostMedia
             {
-                Id = 2,
-                Title = "Existing Blog Post",
-                Description = "Another description",
-                IsPublished = true,
-                BlogPostMedias = new List<BlogPostMedia>()
+                MediaId = 2,
+                Media = new Media
+                {
+                    Id = 2,
+                    Url = "http://example.com/image2.jpg",
+                    FileName = "image2.jpg",
+                    MediaType = MediaType.Image,
+                    ContentType = "image/jpeg",
+                    Description = "Image 2",
+                    FileSize = 2048
+                },
+                Order = 1
+            }
+        }
             };
 
             _blogPostRepoMock.Setup(repo => repo.GetByIdAsync(blogPostId))
                 .ReturnsAsync(existingBlogPost);
 
-            // Setup Validator: Validierung besteht
-            _createDtoValidatorMock.Setup(v => v.ValidateAsync(updateDto, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new ValidationResult());
+            _blogPostRepoMock.Setup(repo => repo.LoadBlogPostMediasAsync(existingBlogPost))
+                .Returns(Task.CompletedTask);
 
-            // Setup Repository: Ein anderer BlogPost mit dem gleichen Titel existiert
-            _blogPostRepoMock.Setup(repo => repo.GetBlogPostByTitleAsync("Existing Blog Post"))
-                .ReturnsAsync(anotherBlogPost);
+            _mediaRepositoryMock.Setup(mr => mr.DeleteImage(It.IsAny<Media>()))
+                .Throws(new Exception("Error deleting image"));
 
             // Act & Assert
-            await Assert.ThrowsAsync<BlogPostDuplicateTitleException>(() => _service.UpdateBlogPostAsync(blogPostId, updateDto));
+            await Assert.ThrowsAsync<BlogPostUpdateException>(() => _service.UpdateBlogPostWithImagesAsync(updateDto));
 
-            _createDtoValidatorMock.Verify(v => v.ValidateAsync(updateDto, It.IsAny<CancellationToken>()), Times.Once);
-            _blogPostRepoMock.Verify(repo => repo.GetBlogPostByTitleAsync("Existing Blog Post"), Times.Once);
-            _mediaServiceMock.Verify(m => m.CreateMediaAsync(It.IsAny<MediaCreateDto>()), Times.Never);
-            _mapperMock.Verify(m => m.Map<BlogPostDetailDto>(It.IsAny<BlogPost>()), Times.Never);
+            // Überprüfen, dass die Transaktion zurückgesetzt wurde
+            _blogPostRepoMock.Verify(repo => repo.SaveChangesAsync(), Times.Never);
+            _mediaRepositoryMock.Verify(mr => mr.DeleteImage(It.Is<Media>(m => m.Id == 2)), Times.Once);
+            _mediaRepositoryMock.Verify(mr => mr.RemoveBlogPostMedia(It.IsAny<BlogPostMedia>()), Times.Never);
+            _loggerMock.Verify(
+                x => x.Log(
+                    LogLevel.Error,
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Fehler beim Löschen des Mediums mit ID 2 während der Aktualisierung des BlogPosts.")),
+                    It.IsAny<Exception>(),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+                Times.Once);
         }
+
+
 
         #endregion
 
@@ -601,7 +600,6 @@ namespace MyCourse.Domain.Tests.Services
                     new BlogPostMedia
                     {
                         MediaId = 1,
-                        Caption = "Caption 1",
                         Media = new Media
                         {
                             Id = 1,

@@ -48,9 +48,31 @@ namespace MyCourse.Domain.Data.Repositories.MediaRepositories
             }
         }
 
+        public async Task AddBlogPostMediaAsync(int blogPostId, int mediaId)
+        {
+            var exists = await _dbContext.BlogPostMedias
+                .AnyAsync(bpm => bpm.BlogPostId == blogPostId && bpm.MediaId == mediaId);
+
+            if (!exists)
+            {
+                var blogPostMedia = new BlogPostMedia
+                {
+                    BlogPostId = blogPostId,
+                    MediaId = mediaId
+                };
+
+                await _dbContext.BlogPostMedias.AddAsync(blogPostMedia);
+            }
+        }
+
         public void RemoveCourseMedia(CourseMedia courseMedia)
         {
             _dbContext.CourseMedias.Remove(courseMedia);
+        }
+
+        public void RemoveBlogPostMedia(BlogPostMedia blogPostMedia)
+        {
+            _dbContext.BlogPostMedias.Remove(blogPostMedia);
         }
 
 

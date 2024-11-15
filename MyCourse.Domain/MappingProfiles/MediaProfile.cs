@@ -15,6 +15,8 @@ namespace MyCourse.Domain.MappingProfiles
         public MediaProfile()
         {
             CreateMap<Media, MediaCreateDto>().ReverseMap();
+
+
         }
     }
 }

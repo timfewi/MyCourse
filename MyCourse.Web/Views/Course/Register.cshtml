@@ -4,106 +4,126 @@
     ViewData["Title"] = "Für Kurs anmelden";
 }
 
-<div class="container my-5">
-    <h1><i class="fas fa-user-plus me-2"></i>Für Kurs anmelden</h1>
-    <p class="lead">Bitte füllen Sie das folgende Formular aus, um sich für den Kurs anzumelden.</p>
-
-    @* Fehlermeldungen anzeigen *@
-    @if (!ViewData.ModelState.IsValid)
-    {
-        <div class="alert alert-danger">
-            <ul class="mb-0">
-                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
-                {
-                    <li>@error.ErrorMessage</li>
-                }
-            </ul>
-        </div>
-    }
-
-    <form id="registration-form" method="post" action="@Url.Action("Register", "Course")">
-        @Html.AntiForgeryToken()
-        <input type="hidden" asp-for="CourseId" />
-
-        <div class="row g-3">
-            <!-- Persönliche Daten -->
-            <div class="col-md-6">
-                <label asp-for="FirstName" class="form-label">
-                    <i class="fas fa-user text-primary me-2"></i>@Html.DisplayNameFor(m => m.FirstName)
-                </label>
-                <input asp-for="FirstName" class="form-control" placeholder="Vorname" />
-                <span asp-validation-for="FirstName" class="text-danger"></span>
-            </div>
-
-            <div class="col-md-6">
-                <label asp-for="LastName" class="form-label">
-                    <i class="fas fa-user text-primary me-2"></i>@Html.DisplayNameFor(m => m.LastName)
-                </label>
-                <input asp-for="LastName" class="form-control" placeholder="Nachname" />
-                <span asp-validation-for="LastName" class="text-danger"></span>
-            </div>
-
-            <div class="col-md-6">
-                <label asp-for="Email" class="form-label">
-                    <i class="fas fa-envelope text-primary me-2"></i>@Html.DisplayNameFor(m => m.Email)
-                </label>
-                <input asp-for="Email" class="form-control" placeholder="E-Mail-Adresse" />
-                <span asp-validation-for="Email" class="text-danger"></span>
-            </div>
-
-            <div class="col-md-6">
-                <label asp-for="PhoneNumber" class="form-label">
-                    <i class="fas fa-phone text-primary me-2"></i>@Html.DisplayNameFor(m => m.PhoneNumber)
-                </label>
-                <input asp-for="PhoneNumber" class="form-control" placeholder="Telefonnummer" />
-                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
-            </div>
-
-            <!-- Persönliche Präferenzen -->
-            <div class="col-md-12">
-                <label asp-for="ExperienceLevel" class="form-label">
-                    <i class="fas fa-paint-brush text-primary me-2"></i>@Html.DisplayNameFor(m => m.ExperienceLevel)
-                </label>
-                <select asp-for="ExperienceLevel" class="form-select">
-                    <option value="">Bitte wählen...</option>
-                    <option value="Anfänger">Anfänger</option>
-                    <option value="Fortgeschritten">Fortgeschritten</option>
-                    <option value="Experte">Experte</option>
-                </select>
-                <span asp-validation-for="ExperienceLevel" class="text-danger"></span>
-            </div>
-
-            <div class="col-md-12">
-                <label asp-for="PreferredStyle" class="form-label">
-                    <i class="fas fa-palette text-primary me-2"></i>@Html.DisplayNameFor(m => m.PreferredStyle)
-                    (optional)
-                </label>
-                <input asp-for="PreferredStyle" class="form-control" placeholder="Bevorzugter Malstil (z.B. Aquarell, Ölmalerei)" />
-                @*<span asp-validation-for="PreferredStyle" class="text-danger"></span>*@
-            </div>
-
-            <div class="col-md-12">
-                <label asp-for="Comments" class="form-label">
-                    <i class="fas fa-comments text-primary me-2"></i>@Html.DisplayNameFor(m => m.Comments)
-                    (optional)
-                </label>
-                <textarea asp-for="Comments" class="form-control" rows="4" placeholder="Anmerkungen oder besondere Anforderungen"></textarea>
-                @*<span asp-validation-for="Comments" class="text-danger"></span>*@
-            </div>
-
-            <!-- Weitere Felder nach Bedarf hinzufügen -->
+<link rel="stylesheet" href="@Url.Content("~/css/home/course/course-registration.css")" />
+<!-- Hintergrundbild oder Muster hinzufügen -->
+<section class="registration-section">
+    <div class="container my-5">
+        <div class="text-center mb-4">
+            <h1 class="display-4 text-white"><i class="fas fa-user-plus me-2"></i>Für Kurs anmelden</h1>
+            <p class="lead text-muted">Bitte füllen Sie das folgende Formular aus, um sich für den Kurs anzumelden.</p>
         </div>
 
-        <div class="mt-4">
-            <button type="submit" class="btn btn-success">
-                <i class="fas fa-check-circle me-2"></i>Anmelden
-            </button>
-            <a href="@Url.Action("Details", "Course", new { id = Model.CourseId })" class="btn btn-secondary ms-2">
-                <i class="fas fa-arrow-left me-2"></i>Zurück zum Kurs
-            </a>
-        </div>
-    </form>
-</div>
+        @* Fehlermeldungen anzeigen *@
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="alert alert-danger">
+                <ul class="mb-0">
+                    @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                        <li>@error.ErrorMessage</li>
+                    }
+                </ul>
+            </div>
+        }
+
+        <form id="registration-form" method="post" action="@Url.Action("Register", "Course")" class="bg-dark p-4 rounded shadow">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="CourseId" />
+
+            <div class="row g-4">
+                <!-- Persönliche Daten -->
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label asp-for="FirstName" class="form-label text-white">
+                            <i class="fas fa-user me-2"></i>@Html.DisplayNameFor(m => m.FirstName)
+                        </label>
+                        <input asp-for="FirstName" class="form-control form-control-lg bg-secondary text-white border-0" placeholder="Vorname" />
+                        <span asp-validation-for="FirstName" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label asp-for="LastName" class="form-label text-white">
+                            <i class="fas fa-user me-2"></i>@Html.DisplayNameFor(m => m.LastName)
+                        </label>
+                        <input asp-for="LastName" class="form-control form-control-lg bg-secondary text-white border-0" placeholder="Nachname" />
+                        <span asp-validation-for="LastName" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label asp-for="Email" class="form-label text-white">
+                            <i class="fas fa-envelope me-2"></i>@Html.DisplayNameFor(m => m.Email)
+                        </label>
+                        <input asp-for="Email" class="form-control form-control-lg bg-secondary text-white border-0" placeholder="E-Mail-Adresse" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label asp-for="PhoneNumber" class="form-label text-white">
+                            <i class="fas fa-phone me-2"></i>@Html.DisplayNameFor(m => m.PhoneNumber)
+                        </label>
+                        <input asp-for="PhoneNumber" class="form-control form-control-lg bg-secondary text-white border-0" placeholder="Telefonnummer" />
+                        <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <!-- Persönliche Präferenzen -->
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label asp-for="ExperienceLevel" class="form-label text-white">
+                            <i class="fas fa-paint-brush me-2"></i>@Html.DisplayNameFor(m => m.ExperienceLevel)
+                        </label>
+                        <select asp-for="ExperienceLevel" class="form-select form-select-lg bg-secondary text-white border-0">
+                            <option value="">Bitte wählen...</option>
+                            <option value="Anfänger">Anfänger</option>
+                            <option value="Fortgeschritten">Fortgeschritten</option>
+                            <option value="Experte">Experte</option>
+                        </select>
+                        <span asp-validation-for="ExperienceLevel" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label asp-for="PreferredStyle" class="form-label text-white">
+                            <i class="fas fa-palette me-2"></i>@Html.DisplayNameFor(m => m.PreferredStyle)
+                            <small class="text-muted">(optional)</small>
+                        </label>
+                        <input asp-for="PreferredStyle" class="form-control form-control-lg bg-secondary text-white border-0" placeholder="Bevorzugter Malstil (z.B. Aquarell, Ölmalerei)" />
+                        <span asp-validation-for="PreferredStyle" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label asp-for="Comments" class="form-label text-white">
+                            <i class="fas fa-comments me-2"></i>@Html.DisplayNameFor(m => m.Comments)
+                            <small class="text-muted">(optional)</small>
+                        </label>
+                        <textarea asp-for="Comments" class="form-control form-control-lg bg-secondary text-white border-0" rows="4" placeholder="Anmerkungen oder besondere Anforderungen"></textarea>
+                        <span asp-validation-for="Comments" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <!-- Weitere Felder nach Bedarf hinzufügen -->
+            </div>
+
+            <div class="mt-4 d-flex justify-content-center">
+                <button type="submit" class="btn btn-success btn-lg me-3">
+                    <i class="fas fa-check-circle me-2"></i>Anmelden
+                </button>
+                <a href="@Url.Action("Details", "Course", new { id = Model.CourseId })" class="btn btn-secondary btn-lg">
+                    <i class="fas fa-arrow-left me-2"></i>Zurück zum Kurs
+                </a>
+            </div>
+        </form>
+    </div>
+</section>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

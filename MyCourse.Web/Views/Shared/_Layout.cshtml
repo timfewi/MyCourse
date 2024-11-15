@@ -13,9 +13,9 @@
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark text-white bg-dark border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark text-white bg-dark border-bottom box-shadow mb-3 fixed-top">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">MyCourse.Web</a>
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Art & Soul</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -25,7 +25,7 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Startseite</a>
                         </li>
-                     
+
                     </ul>
                     <ul class="navbar-nav">
                         @if (User.IsInRole("ADMIN"))
@@ -59,14 +59,15 @@
         </main>
     </div>
 
+
     <footer class="bg-light text-muted pt-5 pb-4">
         <div class="container-fluid text-md-left">
             <div class="row text-md-left">
                 <!-- Über uns -->
                 <div class="col-md-3 col-lg-3 col-xl-3 mx-auto mt-3">
-                    <h5 class="text-uppercase mb-4 font-weight-bold">MyCourse.Web</h5>
+                    <h5 class="text-uppercase mb-4 font-weight-bold">Art & Soul</h5>
                     <p>
-                        MyCourse.Web bietet hochwertige Malkurse für Anfänger und Fortgeschrittene. Entfalte deine Kreativität mit unseren erfahrenen Lehrern.
+                        Art & Soul bietet hochwertige Malkurse für Anfänger und Fortgeschrittene. Entfalte deine Kreativität mit unseren erfahrenen Lehrern.
                     </p>
                 </div>
 
@@ -81,7 +82,7 @@
                 <div class="col-md-3 col-lg-2 col-xl-2 mx-auto mt-3">
                     <h5 class="text-uppercase mb-4 font-weight-bold">Rechtliches</h5>
                     <p><a href="@Url.Action("Privacy", "Home")" class="text-reset">Datenschutz</a></p>
-                    <p><a href="@Url.Action("Terms", "Home")" class="text-reset">Nutzungsbedingungen</a></p>
+                    <p><a href="@Url.Action("CookiePolicy", "Home")" class="text-reset">Cookie-Richtlinie</a></p>
                     <p><a href="@Url.Action("FAQ", "Home")" class="text-reset">FAQ</a></p>
                 </div>
 
@@ -122,6 +123,11 @@
         </div>
     </footer>
 
+    <!-- Cookie-Banner -->
+    <div id="cookie-banner" style="position: fixed; bottom: 0; width: 100%; background-color: #f1f1f1; padding: 15px; text-align: center; display: none;">
+        <span>Wir verwenden Cookies, um Ihre Erfahrung auf unserer Website zu verbessern. <a href="@Url.Action("CookiePolicy", "Home")">Mehr erfahren</a>.</span>
+        <button id="accept-cookies" style="margin-left: 15px;">Akzeptieren</button>
+    </div>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>

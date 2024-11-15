@@ -182,7 +182,8 @@ namespace MyCourse.Domain.Services.ApplicationService
             // Beispielhafte Implementierung der Statusübergangslogik
             return (currentStatus == ApplicationStatusType.Pending &&
                     (newStatus == ApplicationStatusType.Approved || newStatus == ApplicationStatusType.Rejected || newStatus == ApplicationStatusType.Waiting)) ||
-                   (currentStatus == ApplicationStatusType.Waiting && newStatus == ApplicationStatusType.Approved);
+                   (currentStatus == ApplicationStatusType.Waiting && newStatus == ApplicationStatusType.Approved) ||
+                   (currentStatus == ApplicationStatusType.Rejected && (newStatus == ApplicationStatusType.Approved || newStatus == ApplicationStatusType.Waiting));
         }
 
         public async Task AcceptApplicationAsync(int applicationId)

@@ -67,12 +67,7 @@ namespace MyCourse.Domain.Validation.DtoValidations.BlogPostDtoValidations
                 .Must(BeAValidContentType).WithMessage("The ContentType is invalid.");
 
             RuleFor(x => x.FileSize)
-                         .GreaterThan(0).WithMessage("File size must be greater than zero.")
                          .LessThanOrEqualTo(10 * 1024 * 1024).WithMessage("File size cannot exceed 10 MB.");
-
-            RuleFor(x => x.Caption)
-                .MaximumLength(500).WithMessage("Caption cannot exceed 500 characters.")
-                .When(x => !string.IsNullOrEmpty(x.Caption));
 
         }
         private bool BeAValidUrl(string url)

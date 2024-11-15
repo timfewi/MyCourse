@@ -142,7 +142,7 @@ namespace MyCourse.Domain.Services.CourseServices
                 _logger.LogWarning("Course with ID {CourseId} not found for deletion.", courseId);
                 throw new CourseNotFoundException(courseId);
             }
-
+            // TODO Medien mit löschen
             _courseRepository.DeleteCourse(course);
 
             try

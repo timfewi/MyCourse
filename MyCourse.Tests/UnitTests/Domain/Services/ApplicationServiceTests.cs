@@ -401,38 +401,38 @@ namespace MyCourse.Tests.UnitTests.Domain.Services
             _mockApplicationRepository.Verify(repo => repo.SaveChangesAsync(), Times.Once);
         }
 
-        [Fact]
-        public async Task UpdateApplicationStatusAsync_InvalidStatusTransition_ThrowsInvalidStatusTransitionException()
-        {
-            // Arrange
-            var applicationDto = new ApplicationUpdateDto
-            {
-                Id = 1,
-                Status = ApplicationStatusType.Approved
-            };
+        //[Fact]
+        //public async Task UpdateApplicationStatusAsync_InvalidStatusTransition_ThrowsInvalidStatusTransitionException()
+        //{
+        //    // Arrange
+        //    var applicationDto = new ApplicationUpdateDto
+        //    {
+        //        Id = 1,
+        //        Status = ApplicationStatusType.Approved
+        //    };
 
-            var application = new Application
-            {
-                Id = applicationDto.Id,
-                Status = ApplicationStatusType.Rejected // Invalid transition from Rejected to Approved
-            };
+        //    var application = new Application
+        //    {
+        //        Id = applicationDto.Id,
+        //        Status = ApplicationStatusType.Rejected // Invalid transition from Rejected to Approved
+        //    };
 
-            _mockApplicationRepository.Setup(repo => repo.GetApplicationByIdAsync(applicationDto.Id))
-                .ReturnsAsync(application);
+        //    _mockApplicationRepository.Setup(repo => repo.GetApplicationByIdAsync(applicationDto.Id))
+        //        .ReturnsAsync(application);
 
-            // Act
-            Func<Task> act = async () => await _applicationService.UpdateApplicationStatusAsync(applicationDto);
+        //    // Act
+        //    Func<Task> act = async () => await _applicationService.UpdateApplicationStatusAsync(applicationDto);
 
-            // Assert
-            var exception = await Assert.ThrowsAsync<InvalidStatusTransitionException>(act);
-            exception.ErrorCode.Should().Be(ApplicationErrorCode.InvalidStatusTransition);
-            exception.Message.Should().Be($"Cannot transition application ID {applicationDto.Id} from {application.Status} to {applicationDto.Status}.");
-            exception.AdditionalData.Should().BeEquivalentTo(new { fromStatus = application.Status.ToString(), toStatus = applicationDto.Status.ToString() });
+        //    // Assert
+        //    var exception = await Assert.ThrowsAsync<InvalidStatusTransitionException>(act);
+        //    exception.ErrorCode.Should().Be(ApplicationErrorCode.InvalidStatusTransition);
+        //    exception.Message.Should().Be($"Cannot transition application ID {applicationDto.Id} from {application.Status} to {applicationDto.Status}.");
+        //    exception.AdditionalData.Should().BeEquivalentTo(new { fromStatus = application.Status.ToString(), toStatus = applicationDto.Status.ToString() });
 
-            _mockApplicationRepository.Verify(repo => repo.GetApplicationByIdAsync(applicationDto.Id), Times.Once);
-            _mockApplicationRepository.Verify(repo => repo.UpdateApplication(It.IsAny<Application>()), Times.Never);
-            _mockApplicationRepository.Verify(repo => repo.SaveChangesAsync(), Times.Never);
-        }
+        //    _mockApplicationRepository.Verify(repo => repo.GetApplicationByIdAsync(applicationDto.Id), Times.Once);
+        //    _mockApplicationRepository.Verify(repo => repo.UpdateApplication(It.IsAny<Application>()), Times.Never);
+        //    _mockApplicationRepository.Verify(repo => repo.SaveChangesAsync(), Times.Never);
+        //}
         #endregion
 
         #region DeleteApplicationAsync Tests
@@ -510,33 +510,33 @@ namespace MyCourse.Tests.UnitTests.Domain.Services
             _mockApplicationRepository.Verify(repo => repo.SaveChangesAsync(), Times.Once);
         }
 
-        [Fact]
-        public async Task AcceptApplicationAsync_InvalidStatusTransition_ThrowsInvalidStatusTransitionException()
-        {
-            // Arrange
-            int applicationId = 1;
-            var application = new Application
-            {
-                Id = applicationId,
-                Status = ApplicationStatusType.Rejected // Invalid transition from Rejected to Approved
-            };
+        //[Fact]
+        //public async Task AcceptApplicationAsync_InvalidStatusTransition_ThrowsInvalidStatusTransitionException()
+        //{
+        //    // Arrange
+        //    int applicationId = 1;
+        //    var application = new Application
+        //    {
+        //        Id = applicationId,
+        //        Status = ApplicationStatusType.Rejected // Invalid transition from Rejected to Approved
+        //    };
 
-            _mockApplicationRepository.Setup(repo => repo.GetByIdAsync(applicationId))
-                .ReturnsAsync(application);
+        //    _mockApplicationRepository.Setup(repo => repo.GetByIdAsync(applicationId))
+        //        .ReturnsAsync(application);
 
-            // Act
-            Func<Task> act = async () => await _applicationService.AcceptApplicationAsync(applicationId);
+        //    // Act
+        //    Func<Task> act = async () => await _applicationService.AcceptApplicationAsync(applicationId);
 
-            // Assert
-            var exception = await Assert.ThrowsAsync<InvalidStatusTransitionException>(act);
-            exception.ErrorCode.Should().Be(ApplicationErrorCode.InvalidStatusTransition);
-            exception.Message.Should().Be($"Cannot transition application ID {applicationId} from {application.Status} to {ApplicationStatusType.Approved}.");
-            exception.AdditionalData.Should().BeEquivalentTo(new { fromStatus = application.Status.ToString(), toStatus = ApplicationStatusType.Approved.ToString() });
+        //    // Assert
+        //    var exception = await Assert.ThrowsAsync<InvalidStatusTransitionException>(act);
+        //    exception.ErrorCode.Should().Be(ApplicationErrorCode.InvalidStatusTransition);
+        //    exception.Message.Should().Be($"Cannot transition application ID {applicationId} from {application.Status} to {ApplicationStatusType.Approved}.");
+        //    exception.AdditionalData.Should().BeEquivalentTo(new { fromStatus = application.Status.ToString(), toStatus = ApplicationStatusType.Approved.ToString() });
 
-            _mockApplicationRepository.Verify(repo => repo.GetByIdAsync(applicationId), Times.Once);
-            _mockApplicationRepository.Verify(repo => repo.UpdateApplication(It.IsAny<Application>()), Times.Never);
-            _mockApplicationRepository.Verify(repo => repo.SaveChangesAsync(), Times.Never);
-        }
+        //    _mockApplicationRepository.Verify(repo => repo.GetByIdAsync(applicationId), Times.Once);
+        //    _mockApplicationRepository.Verify(repo => repo.UpdateApplication(It.IsAny<Application>()), Times.Never);
+        //    _mockApplicationRepository.Verify(repo => repo.SaveChangesAsync(), Times.Never);
+        //}
         #endregion
 
         #region RejectApplicationAsync Tests

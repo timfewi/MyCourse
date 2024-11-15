@@ -13,5 +13,6 @@ namespace MyCourse.Domain.Data.Interfaces.Services
         Task DeleteMediaAsync(int mediaId);
         Task UpdateMediaAsync(int mediaId, MediaCreateDto mediaDto);
         Task AddMediaToCourseAsync(int courseId, MediaCreateDto mediaDto);
+        Task AddMediaToBlogPostAsync(int blogPostId, MediaCreateDto mediaDto);
     }
 }

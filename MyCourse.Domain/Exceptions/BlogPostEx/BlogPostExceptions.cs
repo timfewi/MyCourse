@@ -15,7 +15,7 @@ namespace MyCourse.Domain.Exceptions.BlogPostEx
         }
 
         // Invalid Operation 
-        public class BlogPostInvalidOperationException : BlogPostException 
+        public class BlogPostInvalidOperationException : BlogPostException
         {
             public BlogPostInvalidOperationException(string message, int? blogPostId = null, object? additionalData = null) : base(BlogPostErrorCode.InvalidOperation, message, blogPostId, additionalData) { }
         }
@@ -74,6 +74,13 @@ namespace MyCourse.Domain.Exceptions.BlogPostEx
         {
             public BlogPostDatabaseException(string message, int? blogPostId = null, object? additionalData = null)
                 : base(BlogPostErrorCode.DatabaseError, message, blogPostId, additionalData) { }
+        }
+
+
+        // Update Error
+        public class BlogPostUpdateException : BlogPostException
+        {
+            public BlogPostUpdateException(string message, int? blogPostId, object? additionalData = null) : base(BlogPostErrorCode.InvalidOperation, message, blogPostId, additionalData) { }
         }
     }
 }

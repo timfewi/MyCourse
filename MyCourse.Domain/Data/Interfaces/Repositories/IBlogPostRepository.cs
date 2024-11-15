@@ -17,6 +17,7 @@ namespace MyCourse.Domain.Data.Interfaces.Repositories
         Task<BlogPost?> GetBlogPostByTitleAsync(string title);
         Task AddBlogPostAsync(BlogPost blogPost);
         void UpdateBlogPost(BlogPost blogPost);
+        Task UpdateTagsAsync(BlogPost blogPost, List<string> newTags);
         void DeleteBlogPost(BlogPost blogPost);
         void RemoveBlogPostMedia(BlogPostMedia blogPostMedia);
         Task LoadBlogPostMediasAsync(BlogPost blogPost);

@@ -61,6 +61,30 @@ namespace MyCourse.Domain.Services.MediaServices
             }
         }
 
+        public async Task AddMediaToBlogPostAsync(int blogPostId, MediaCreateDto mediaDto)
+        {
+            try
+            {
+                var mediaId = await CreateMediaAsync(mediaDto);
+                await _mediaRepository.AddBlogPostMediaAsync(blogPostId, mediaId);
+                await _mediaRepository.SaveChangesAsync();
+            }
+            catch (MediaValidationException)
+            {
+                throw;
+            }
+            catch (InvalidMediaOperationException ex)
+            {
+                _logger.LogError(ex, "An error occurred while adding media to blogPost.");
+                throw new MediaException(MediaErrorCode.InvalidOperation, "Failed to add media to blogPost.", ex.MediaId, ex);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An unexpected error occurred.");
+                throw new MediaException(MediaErrorCode.InvalidOperation, "An unexpected error occurred.", null, ex);
+            }
+        }
+
         public async Task<int> CreateMediaAsync(MediaCreateDto mediaDto)
         {
             try

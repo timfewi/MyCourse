@@ -15,6 +15,5 @@ namespace MyCourse.Domain.DTOs.BlogPostDtos.BlogPostMediaDtos
         public string ContentType { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public long FileSize { get; set; }
-        public string? Caption { get; set; }
     }
 }

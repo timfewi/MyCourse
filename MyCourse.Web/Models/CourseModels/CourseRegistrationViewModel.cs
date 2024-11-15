@@ -26,9 +26,11 @@ namespace MyCourse.Web.Models.CourseModels
         public string PhoneNumber { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Bitte wählen Sie Ihr Erfahrungsniveau aus")]
+        [Display(Name = "Erfahrungstufe")]
         public string? ExperienceLevel { get; set; }
 
         [Required(ErrorMessage = "Bitte geben Sie Ihren bevorzugten Malstil an")]
+        [Display(Name = "Lieblingsstil")]
         public string? PreferredStyle { get; set; }
 
 

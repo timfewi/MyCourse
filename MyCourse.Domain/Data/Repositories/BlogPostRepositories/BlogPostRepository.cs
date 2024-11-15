@@ -92,6 +92,25 @@ namespace MyCourse.Domain.Data.Repositories.BlogPostRepositories
             _dbSet.Update(blogPost);  
         }
 
+        public async Task UpdateTagsAsync(BlogPost blogPost, List<string> newTags)
+        {
+            if (_dbContext.Entry(blogPost).State == EntityState.Detached)
+            {
+                _dbContext.BlogPosts.Attach(blogPost);
+            }
+
+            blogPost.Tags.Clear();
+
+            if (newTags != null && newTags.Any())
+            {
+                foreach (var tag in newTags)
+                {
+                    blogPost.Tags.Add(tag);
+                }
+            }
+            await _dbContext.SaveChangesAsync();
+        }
+
         public void RemoveBlogPostMedia(BlogPostMedia blogPostMedia)
         {
             _dbContext.Remove(blogPostMedia);

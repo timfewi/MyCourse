@@ -1,0 +1,188 @@
+﻿/* Grundlegende Typografie */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #121212;
+    color: #e0e0e0;
+}
+
+#blog-detail {
+    background-color: #1e1e1e;
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-top: 30px;
+    margin-bottom: 30px;
+}
+
+.blog-header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #212529;
+}
+
+.blog-header .text-muted span {
+    font-size: 0.9rem;
+}
+
+.blog-header .tags .badge {
+    font-size: 0.85rem;
+    padding: 0.5em 0.75em;
+}
+
+.blog-content {
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+/* Grid-Layout für die Bilder */
+.image-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    grid-auto-rows: 200px;
+    gap: 15px;
+}
+
+.image-item {
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+    .image-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .image-item:hover img {
+        transform: scale(1.05);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    }
+
+.large-image {
+    grid-column: span 2;
+    grid-row: span 2;
+}
+
+.small-image {
+    grid-column: span 1;
+    grid-row: span 1;
+}
+
+.image-container {
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+    .image-container img {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        width: 100%;
+        height: auto;
+    }
+
+    .image-container:hover img {
+        transform: scale(1.05);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    }
+    
+
+
+.modal-img {
+    max-width: 100%;
+    max-height: 80vh;
+    object-fit: contain;
+    border-radius: 8px;
+}
+
+/* Zusätzliche Abstände zwischen den kleinen Bildern */
+.col-md-6 .row .col-6 {
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    padding: 10px;
+}
+
+    .carousel-control-prev-icon:hover,
+    .carousel-control-next-icon:hover {
+        background-color: rgba(0, 0, 0, 0.8);
+    }
+
+.carousel-inner img {
+    border-radius: 8px;
+}
+
+@media (max-width: 768px) {
+    #blog-detail {
+        padding: 20px;
+    }
+
+    .blog-header h1 {
+        font-size: 2rem;
+    }
+
+    .blog-content {
+        font-size: 1rem;
+    }
+
+    .carousel-control-prev-icon,
+    .carousel-control-next-icon {
+        padding: 5px;
+    }
+
+    .image-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        grid-auto-rows: 150px;
+    }
+
+    .large-image {
+        grid-column: span 1;
+        grid-row: span 1;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: #121212;
+        color: #e0e0e0;
+    }
+
+    #blog-detail {
+        background-color: #1e1e1e;
+        box-shadow: 0 4px 6px rgba(255, 255, 255, 0.1);
+    }
+
+    .blog-header h1 {
+        color: #ffffff;
+    }
+
+    .blog-header .text-muted span {
+        color: #aaaaaa;
+    }
+
+    .blog-header .tags .badge {
+        background-color: #444444;
+    }
+
+    .modal-body {
+        background-color: #1e1e1e;
+    }
+
+    .carousel-control-prev-icon,
+    .carousel-control-next-icon {
+        background-color: rgba(255, 255, 255, 0.5);
+    }
+
+        .carousel-control-prev-icon:hover,
+        .carousel-control-next-icon:hover {
+            background-color: rgba(255, 255, 255, 0.8);
+        }
+}

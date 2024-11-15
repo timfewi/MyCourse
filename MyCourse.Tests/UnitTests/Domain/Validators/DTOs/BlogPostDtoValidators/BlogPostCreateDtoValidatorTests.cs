@@ -101,7 +101,6 @@ namespace MyCourse.Tests.UnitTests.Domain.Validators.DTOs.BlogPostDtoValidators
                     ContentType = "image/jpeg",
                     Description = $"Description for image {i}",
                     FileSize = 1024 * i,
-                    Caption = $"Caption {i}"
                 });
             }
 
@@ -125,7 +124,6 @@ namespace MyCourse.Tests.UnitTests.Domain.Validators.DTOs.BlogPostDtoValidators
                         ContentType = TestConstants.ValidContentType,
                         Description = "Description for image 1",
                         FileSize = 1024,
-                        Caption = "Caption 1"
                     }
                 }
             };
@@ -154,7 +152,6 @@ namespace MyCourse.Tests.UnitTests.Domain.Validators.DTOs.BlogPostDtoValidators
                         ContentType = "image/jpeg",
                         Description = "Description for image 1",
                         FileSize = 1024,
-                        Caption = "Caption 1"
                     },
                     new BlogPostMediaCreateDto
                     {
@@ -164,7 +161,6 @@ namespace MyCourse.Tests.UnitTests.Domain.Validators.DTOs.BlogPostDtoValidators
                         ContentType = "image/png",
                         Description = "Description for image 2",
                         FileSize = 2048,
-                        Caption = "Caption 2"
                     }
                 }
             };

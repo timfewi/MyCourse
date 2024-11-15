@@ -46,14 +46,58 @@ namespace MyCourse.Web.Controllers
             // Definiere die Features
             var features = new List<Feature>
             {
-                new Feature { IconClass = "fas fa-graduation-cap", Title = "Erfahrene Dozenten", Description = "Unsere Dozenten sind Experten auf ihrem Gebiet und teilen ihr Wissen praxisnah." },
-                new Feature { IconClass = "fas fa-laptop-code", Title = "Flexible Lernzeiten", Description = "Lerne in deinem eigenen Tempo und gestalte deine Lernzeiten flexibel." },
-                new Feature { IconClass = "fas fa-certificate", Title = "Zertifikate", Description = "Erhalte nach Abschluss deines Kurses ein anerkanntes Zertifikat." },
-                new Feature { IconClass = "fas fa-users", Title = "Community", Description = "Werde Teil unserer Community und vernetze dich mit anderen Lernenden." }
+               new Feature
+            {
+                IconClass = "fas fa-users",
+                Title = "Gemeinschaft und Vernetzung",
+                Description = "Verbinde dich mit Gleichgesinnten und teile kreative Momente in einer unterstützenden Umgebung."
+            },
+            new Feature
+            {
+                IconClass = "fas fa-chalkboard-teacher",
+                Title = "Professionelle Anleitung",
+                Description = "Lerne von erfahrenen Künstlern, die dich Schritt für Schritt durch den Malprozess führen."
+            },
+            new Feature
+            {
+                IconClass = "fas fa-palette",
+                Title = "Kreative Freiheit",
+                Description = "Entfalte deine Kreativität ohne Einschränkungen und entdecke deinen eigenen Malstil."
+            },
+            new Feature
+            {
+                IconClass = "fas fa-spa",
+                Title = "Entspannende Atmosphäre",
+                Description = "Genieße eine stressfreie Umgebung, in der du deine Gedanken schweifen lassen und dich künstlerisch ausdrücken kannst."
+            },
+            new Feature
+            {
+                IconClass = "fas fa-paint-brush",
+                Title = "Hochwertige Materialien",
+                Description = "Verwende erstklassige Malutensilien, die deine künstlerische Erfahrung bereichern."
+            },
+            new Feature
+            {
+                IconClass = "fas fa-calendar-alt",
+                Title = "Flexible Kurszeiten",
+                Description = "Wähle aus verschiedenen Kurszeiten, die sich deinem persönlichen Zeitplan anpassen."
+            }
             };
 
             var allPublishedBlogs = await _blogPostService.GetPublishedBlogPostsAsync();
-            var top4Blogs = allPublishedBlogs.Take(4).Select(b => new BlogPostHomeViewModel
+
+            // IMPL.
+            //var top4Blogs = allPublishedBlogs.Take(4).Select(b => new BlogPostHomeViewModel
+            //{
+            //    Id = b.Id,
+            //    Title = b.Title,
+            //    ShortDescription = b.ShortDescription,
+            //    ThumbnailUrl = b.ThumbnailUrl,
+            //    DateCreated = b.DateCreated,
+            //    Tags = b.Tags,
+            //}).ToList();
+            
+            var blogViewModel = allPublishedBlogs.Select(b => new BlogPostHomeViewModel
             {
                 Id = b.Id,
                 Title = b.Title,
@@ -62,12 +106,14 @@ namespace MyCourse.Web.Controllers
                 DateCreated = b.DateCreated,
                 Tags = b.Tags,
             }).ToList();
+            
 
             var viewModel = new HomeViewModel
             {
                 ActiveCourses = activeCoursesHomeViewModel,
                 Features = features,
-                Blogs = top4Blogs,
+                //Blogs = top4Blogs,
+                Blogs = blogViewModel,
                 TotalPublishedBlogPosts = allPublishedBlogs.Count(),
             };
 
@@ -75,6 +121,11 @@ namespace MyCourse.Web.Controllers
         }
 
         public IActionResult Privacy()
+        {
+            return View();
+        }
+
+        public IActionResult CookiePolicy()
         {
             return View();
         }
